@@ -1,0 +1,40 @@
+version: '3.8'
+services:
+  backend:
+    build: 
+      context: ./src-backend
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - ENV=production
+      - DB_POOL_SIZE=20
+      - DB_MAX_OVERFLOW=40
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./src-frontend
+      dockerfile: Dockerfile
+    ports:
+      - "5432:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: gpo_production_secure_password
+      POSTGRES_DB: gpo_db
+    ports:
+      - "5434:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    restart: unless-stopped
+
+volumes:
+  pgdata:

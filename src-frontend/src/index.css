@@ -1,0 +1,151 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Fonts */
+  --font-heading: "Space Grotesk", system-ui, -apple-system, sans-serif;
+  --font-body: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
+
+  /* Colors (Dark - Default) */
+  --color-bg: #0b0e13;
+  --color-surface: #151a21;
+  --color-elevated: #1c222b;
+  --color-border: #2a313c;
+
+  --color-text-primary: #f8fafc;
+  --color-text-secondary: #94a3b8;
+  --color-text-muted: #64748b;
+  --color-text-disabled: #475569;
+
+  --color-accent-primary: #ff7a1a;
+  --color-accent-secondary: #ffa940;
+
+  --color-status-success: #22c55e;
+  --color-status-warning: #f59e0b;
+  --color-status-error: #ef4444;
+  --color-status-info: #3b82f6;
+
+  --color-state-hover: #ff7a1a;
+  --color-state-focus: #3b82f6;
+  --color-state-selection: rgba(255, 122, 26, 0.15);
+  --color-state-disabled-bg: #0f1318;
+
+  --color-agent-idle: #64748b;
+  --color-agent-negotiating: #ffa940;
+  --color-agent-executing: #ff7a1a;
+  --color-agent-success: #22c55e;
+  --color-agent-blocked: #ef4444;
+
+  --color-grid-busbar: #94a3b8;
+  --color-grid-transformer: #ff7a1a;
+  --color-grid-generator: #22c55e;
+  --color-grid-load: #ef4444;
+  --color-grid-line-active: #ff7a1a;
+  --color-grid-line-tripped: #3a4556;
+
+  /* Spacing */
+  --sp-1: 4px;
+  --sp-2: 8px;
+  --sp-3: 12px;
+  --sp-4: 16px;
+  --sp-5: 20px;
+  --sp-6: 24px;
+  --sp-7: 32px;
+  --sp-8: 40px;
+  --sp-9: 48px;
+  --sp-10: 64px;
+  --sp-11: 80px;
+
+  /* Radii */
+  --radius-none: 0px;
+  --radius-sharp: 1px;
+  --radius-card: 3px;
+  --radius-badge: 1px;
+
+  /* Shadows */
+  --shadow-none: none;
+  --shadow-card: 0px 2px 4px rgba(0, 0, 0, 0.2);
+  --shadow-dropdown: 0px 8px 16px rgba(0, 0, 0, 0.4);
+
+  /* Z-Index */
+  --z-base: 0;
+  --z-dropdown: 1000;
+  --z-sticky: 1020;
+  --z-fixed: 1030;
+  --z-modal: 1050;
+  --z-popover: 1060;
+  --z-tooltip: 1080;
+
+  /* Motion */
+  --motion-duration-fast: 120ms;
+  --motion-duration-standard: 180ms;
+  --motion-duration-immediate: 0ms;
+  --motion-easing-standard: cubic-bezier(0.16, 1, 0.3, 1);
+  --motion-easing-linear: linear;
+}
+
+html.light {
+  /* Colors (Light mode mapping) */
+  --color-bg: #ffffff;
+  --color-surface: #f8fafc;
+  --color-elevated: #f1f5f9;
+  --color-border: #e2e8f0;
+
+  --color-text-primary: #0f172a;
+  --color-text-secondary: #334155;
+  --color-text-muted: #475569;
+  --color-text-disabled: #94a3b8;
+
+  --color-state-disabled-bg: #f1f5f9;
+  --color-shadow-card: 0px 2px 4px rgba(0, 0, 0, 0.05);
+  --color-shadow-dropdown: 0px 8px 16px rgba(0, 0, 0, 0.15);
+}
+
+/* CSS Reset & Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  min-height: 100vh;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Selection styling */
+::selection {
+  background-color: var(--color-state-selection);
+  color: inherit;
+}
+
+/* Scrollbar styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: var(--radius-card);
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Accessibility Focus States */
+*:focus-visible {
+  outline: 2px solid var(--color-state-focus);
+  outline-offset: 2px;
+}

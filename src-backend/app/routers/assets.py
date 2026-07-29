@@ -726,25 +726,25 @@ def get_recommendations_history(id: int, db: Session = Depends(get_db)):
         "created_at": h.created_at
     } for h in history]
 
-@router.post("/{id}/recommendations/history")
-def add_recommendation_history(id: int, payload: RecommendationActionSchema, db: Session = Depends(get_db)):
-    asset = db.query(Asset).filter(Asset.id == id, Asset.is_deleted == False).first()
-    if not asset:
-        raise HTTPException(status_code=404, detail="Asset not found")
+# @router.post("/{id}/recommendations/history")
+# def add_recommendation_history(id: int, payload: RecommendationActionSchema, db: Session = Depends(get_db)):
+#     asset = db.query(Asset).filter(Asset.id == id, Asset.is_deleted == False).first()
+#     if not asset:
+#         raise HTTPException(status_code=404, detail="Asset not found")
     
-    rec_text = asset.ai_insights.recommendation if asset.ai_insights else "No active recommendation"
-    rec_prio = asset.ai_insights.priority if asset.ai_insights else "Low"
+#     rec_text = asset.ai_insights.recommendation if asset.ai_insights else "No active recommendation"
+#     rec_prio = asset.ai_insights.priority if asset.ai_insights else "Low"
 
-    new_hist = AssetRecommendationHistory(
-        asset_id=asset.id,
-        recommendation=rec_text,
-        priority=rec_prio,
-        action_taken=payload.action_taken,
-        operator_notes=payload.operator_notes
-    )
-    db.add(new_hist)
-    db.commit()
-    return {"status": "success", "id": new_hist.id}
+#     new_hist = AssetRecommendationHistory(
+#         asset_id=asset.id,
+#         recommendation=rec_text,
+#         priority=rec_prio,
+#         action_taken=payload.action_taken,
+#         operator_notes=payload.operator_notes
+#     )
+#     db.add(new_hist)
+#     db.commit()
+#     return {"status": "success", "id": new_hist.id}
 
 @router.get("/ai/summary")
 def get_ai_summary(db: Session = Depends(get_db)):

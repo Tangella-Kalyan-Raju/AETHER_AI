@@ -6,7 +6,9 @@ from app.models.scenario_models import ScenarioTemplate
 from app.core.security import get_current_user
 
 class MockUser:
+    id = 1
     username = "scenario_admin"
+    email = "scenario_admin@gpo.gov"
     role = "Super Admin"
 
 @pytest.fixture(autouse=True)

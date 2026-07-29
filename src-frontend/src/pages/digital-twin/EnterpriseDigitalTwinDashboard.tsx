@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { InteractiveGridMap } from "@/components/digital-twin/InteractiveGridMap";
 import { AssetDetailPanel } from "@/components/digital-twin/AssetDetailPanel";
 import { AssetSummaryCard } from "@/components/digital-twin/AssetCards";
-import { api } from "@/lib/api";
+import api from "@/api/axios";
 import { Loader2, Server, Activity, Zap, Layers } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,8 +21,8 @@ export default function EnterpriseDigitalTwinDashboard() {
     const fetchDT = async () => {
       try {
         const [assetRes, topoRes] = await Promise.all([
-          api.get("/dt/assets"),
-          api.get("/dt/grid/topology"),
+          api.get("/api/v1/dt/assets"),
+          api.get("/api/v1/dt/grid/topology"),
         ]);
         setAssets(assetRes.data);
         setTopology(topoRes.data);

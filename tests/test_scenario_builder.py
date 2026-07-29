@@ -4,7 +4,9 @@ from app.main import app
 from app.core.security import get_current_user
 
 class MockUser:
+    id = 1
     username = "builder_admin"
+    email = "builder_admin@gpo.gov"
     role = "Super Admin"
 
 @pytest.fixture(autouse=True)

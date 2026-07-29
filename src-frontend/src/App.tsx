@@ -21,6 +21,33 @@ const Register = lazy(() => import("@/routes/Register"));
 const Unauthorized = lazy(() => import("@/routes/Unauthorized"));
 const GridOverview = lazy(() => import("@/routes/GridOverview"));
 const AssetWorkspace = lazy(() => import("@/assets/AssetWorkspace"));
+const AssetDashboard = lazy(() => import("@/routes/AssetIntelligence/AssetDashboard"));
+const AssetRegistryPage = lazy(() => import("@/routes/AssetIntelligence/AssetRegistryPage"));
+const AssetExplorer = lazy(() => import("@/routes/AssetIntelligence/AssetExplorer"));
+const AssetDetailView = lazy(() => import("@/routes/AssetIntelligence/AssetDetailView"));
+const AssetHealthDashboard = lazy(() => import("@/routes/AssetIntelligence/AssetHealthDashboard"));
+const MaintenanceDashboard = lazy(() => import("@/routes/AssetIntelligence/MaintenanceDashboard"));
+const AssetIntelligenceDashboard = lazy(
+  () => import("@/routes/AssetIntelligence/AssetIntelligenceDashboard")
+);
+const RiskDashboard = lazy(() => import("@/routes/AssetIntelligence/RiskDashboard"));
+const MaintenanceRecommendationCenter = lazy(
+  () => import("@/routes/AssetIntelligence/MaintenanceRecommendationCenter")
+);
+const AnalyticsCenter = lazy(() => import("@/routes/AssetIntelligence/AnalyticsCenter"));
+const AssetLifecycleCenter = lazy(() => import("@/routes/AssetIntelligence/AssetLifecycleCenter"));
+const AICopilot = lazy(() => import("@/routes/AssetIntelligence/AICopilot"));
+const AIAnalytics = lazy(() => import("@/routes/AssetIntelligence/AIAnalytics"));
+const AIPromptsManager = lazy(() => import("@/routes/AssetIntelligence/AIPromptsManager"));
+const AISettings = lazy(() => import("@/routes/AssetIntelligence/AISettings"));
+const EnterpriseIntelligenceDashboard = lazy(
+  () => import("@/routes/AssetIntelligence/EnterpriseIntelligenceDashboard")
+);
+const AIWorkspaceDashboard = lazy(() => import("@/routes/AssetIntelligence/AIWorkspaceDashboard"));
+const AIAutomationWorkspace = lazy(
+  () => import("@/routes/AssetIntelligence/AIAutomationWorkspace")
+);
+const AIAnalyticsWorkspace = lazy(() => import("@/routes/AssetIntelligence/AIAnalyticsWorkspace"));
 const GlobalOperationsDashboard = lazy(() => import("@/dashboard/GlobalOperationsDashboard"));
 const DigitalTwin = lazy(() => import("@/routes/DigitalTwin"));
 const ScenarioLibrary = lazy(() => import("@/routes/ScenarioLibrary"));
@@ -193,6 +220,234 @@ export default function App() {
                         <PermissionGuard requiredPermission="assets:view">
                           <Layout>
                             <AssetWorkspace />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AssetDashboard />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence/registry"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AssetRegistryPage />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence/explorer"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AssetExplorer />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence/assets/:id"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AssetDetailView />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence/health"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AssetHealthDashboard />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence/maintenance"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <MaintenanceDashboard />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence/ai"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AssetIntelligenceDashboard />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence/risk"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <RiskDashboard />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence/recommendations"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <MaintenanceRecommendationCenter />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence/analytics"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AnalyticsCenter />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/asset-intelligence/lifecycle"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AssetLifecycleCenter />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/copilot"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AICopilot />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/copilot/analytics"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AIAnalytics />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/copilot/prompts"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AIPromptsManager />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/copilot/settings"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AISettings />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/copilot/workspace"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AIWorkspaceDashboard />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/copilot/automation"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AIAutomationWorkspace />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/copilot/analytics-workspace"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <AIAnalyticsWorkspace />
+                          </Layout>
+                        </PermissionGuard>
+                      </ProtectedRoute>
+                    }
+                  />
+                  <Route
+                    path="/enterprise-intelligence"
+                    element={
+                      <ProtectedRoute>
+                        <PermissionGuard requiredPermission="assets:view">
+                          <Layout>
+                            <EnterpriseIntelligenceDashboard />
                           </Layout>
                         </PermissionGuard>
                       </ProtectedRoute>

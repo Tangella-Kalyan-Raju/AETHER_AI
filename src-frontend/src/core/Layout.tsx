@@ -54,6 +54,7 @@ import {
   FlaskConical,
   Workflow,
   ServerCog,
+  BrainCircuit,
 } from "lucide-react";
 import RightContextPanel from "../components/ui/RightContextPanel";
 
@@ -172,18 +173,6 @@ export function Layout({ children }: LayoutProps) {
       items: [
         { label: "Overview", icon: LayoutDashboard, path: "/", permission: "dashboard:view" },
         {
-          label: "Grid Operations",
-          icon: Network,
-          path: "/grid-overview",
-          permission: "grid:view",
-        },
-        {
-          label: "Interactive Grid Map",
-          icon: Map,
-          path: "/interactive-map",
-          permission: "grid:view",
-        },
-        {
           label: "Digital Twin",
           icon: Layers,
           path: "/digital-twin",
@@ -250,55 +239,69 @@ export function Layout({ children }: LayoutProps) {
           icon: TrendingUp,
           path: "/forecasting",
           permission: "dashboard:view",
-          subItems: [
-            { label: "Enterprise Engine", path: "/forecasting", permission: "dashboard:view" },
-            { label: "Demand Forecast", path: "/forecasting/demand", permission: "dashboard:view" },
-            {
-              label: "Generation Forecast",
-              path: "/forecasting/generation",
-              permission: "dashboard:view",
-            },
-            {
-              label: "Weather Forecast",
-              path: "/forecasting/weather",
-              permission: "dashboard:view",
-            },
-            { label: "Price Forecast", path: "/forecasting/price", permission: "dashboard:view" },
-            {
-              label: "Frequency Forecast",
-              path: "/forecasting/frequency",
-              permission: "dashboard:view",
-            },
-            {
-              label: "Voltage Forecast",
-              path: "/forecasting/voltage",
-              permission: "dashboard:view",
-            },
-            {
-              label: "Reserve Forecast",
-              path: "/forecasting/reserve",
-              permission: "dashboard:view",
-            },
-            {
-              label: "Renewable Forecast",
-              path: "/forecasting/renewable",
-              permission: "dashboard:view",
-            },
-            {
-              label: "Battery Forecast",
-              path: "/forecasting/battery",
-              permission: "dashboard:view",
-            },
-          ],
         },
-        { label: "Optimization Center", icon: Cpu, path: "/optimization-center", permission: "dashboard:view" },
-        { label: "Optimization Legacy", icon: Cpu, path: "/optimization", permission: "dashboard:view" },
+        {
+          label: "Optimization Center",
+          icon: Cpu,
+          path: "/optimization-center",
+          permission: "dashboard:view",
+        },
+        {
+          label: "Optimization Legacy",
+          icon: Cpu,
+          path: "/optimization",
+          permission: "dashboard:view",
+        },
       ],
     },
     {
       group: "Grid",
       items: [
         { label: "Assets", icon: Database, path: "/assets", permission: "assets:view" },
+        {
+          label: "Asset Intelligence",
+          icon: Sparkles,
+          path: "/asset-intelligence",
+          permission: "assets:view",
+          subItems: [
+            { label: "Asset Center", path: "/asset-intelligence", permission: "assets:view" },
+            {
+              label: "Health Diagnostics",
+              path: "/asset-intelligence/health",
+              permission: "assets:view",
+            },
+            {
+              label: "AI Recommendation Engine",
+              path: "/asset-intelligence/ai",
+              permission: "assets:view",
+            },
+            {
+              label: "Action Center",
+              path: "/asset-intelligence/recommendations",
+              permission: "assets:view",
+            },
+            {
+              label: "Asset Analytics Center",
+              path: "/asset-intelligence/analytics",
+              permission: "assets:view",
+            },
+            {
+              label: "Asset Lifecycle Center",
+              path: "/asset-intelligence/lifecycle",
+              permission: "assets:view",
+            },
+            {
+              label: "Asset Explorer",
+              path: "/asset-intelligence/explorer",
+              permission: "assets:view",
+            },
+            {
+              label: "Asset Registry",
+              path: "/asset-intelligence/registry",
+              permission: "assets:view",
+            },
+          ],
+        },
         {
           label: "Analytics",
           icon: BarChart3,
@@ -330,11 +333,35 @@ export function Layout({ children }: LayoutProps) {
           permission: "policies:view",
         },
         {
-          label: "Policy Center",
-          icon: ShieldCheck,
-          path: "/policies",
-          permission: "policies:view",
+          label: "Enterprise AI Copilot",
+          icon: BrainCircuit,
+          path: "/copilot",
+          permission: "assets:view",
+          subItems: [
+            { label: "AI Chat Copilot", path: "/copilot", permission: "assets:view" },
+            {
+              label: "AI Operational Workspace",
+              path: "/copilot/workspace",
+              permission: "assets:view",
+            },
+            {
+              label: "AI Automation Center",
+              path: "/copilot/automation",
+              permission: "assets:view",
+            },
+            {
+              label: "AI Business Analytics",
+              path: "/copilot/analytics-workspace",
+              permission: "assets:view",
+            },
+            {
+              label: "Enterprise Intelligence",
+              path: "/enterprise-intelligence",
+              permission: "assets:view",
+            },
+          ],
         },
+
         {
           label: "Policy Engine",
           icon: ServerCog,
@@ -359,12 +386,6 @@ export function Layout({ children }: LayoutProps) {
           path: "/policy-simulation",
           permission: "policies:view",
         },
-        {
-          label: "Policy Deployment",
-          icon: History,
-          path: "/policy-deployment",
-          permission: "policies:view",
-        },
       ],
     },
     {
@@ -372,19 +393,11 @@ export function Layout({ children }: LayoutProps) {
       items: [
         { label: "Reports", icon: FileText, path: "/reports", permission: "reports:view" },
         {
-          label: "Operator Training",
-          icon: GraduationCap,
-          path: "/operator-training",
-          permission: "dashboard:view",
-        },
-        {
           label: "Dataset Management",
           icon: Database,
           path: "/dataset-management",
           permission: "dashboard:view",
         },
-        { label: "Admin Panel", icon: Users, path: "/admin", permission: "admin:view" },
-        { label: "Settings", icon: Settings, path: "/settings", permission: "settings:view" },
       ],
     },
   ];
@@ -444,10 +457,19 @@ export function Layout({ children }: LayoutProps) {
   };
 
   const toggleGroup = (groupLabel: string) => {
-    setExpandedGroups((prev) => ({
-      ...prev,
-      [groupLabel]: !prev[groupLabel],
-    }));
+    if (isCollapsed) {
+      setIsCollapsed(false);
+      localStorage.setItem("gpo_sidebar_collapsed", "false");
+      setExpandedGroups((prev) => ({
+        ...prev,
+        [groupLabel]: true,
+      }));
+    } else {
+      setExpandedGroups((prev) => ({
+        ...prev,
+        [groupLabel]: !prev[groupLabel],
+      }));
+    }
   };
 
   // Filter items matching the sidebar search field
@@ -908,7 +930,12 @@ export function Layout({ children }: LayoutProps) {
 
                     // Nested Submenus
                     if (item.subItems) {
-                      const isGroupExpanded = expandedGroups[item.label] || false;
+                      const isGroupExpanded =
+                        expandedGroups[item.label] ||
+                        (!!navSearch &&
+                          item.subItems.some((sub) =>
+                            sub.label.toLowerCase().includes(navSearch.toLowerCase())
+                          ));
                       const hasActiveSub = item.subItems.some(
                         (sub) => location.pathname === sub.path
                       );

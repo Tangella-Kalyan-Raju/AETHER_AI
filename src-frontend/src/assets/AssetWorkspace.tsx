@@ -648,59 +648,6 @@ export function AssetWorkspace() {
                   loading={loading}
                 />
               </div>
-            ) : !searchQuery && !activeAsset ? (
-              <div className="flex-1 flex flex-col justify-center items-center p-8 bg-slate-50/10 dark:bg-[#07090C]/20 border border-dashed border-slate-200 dark:border-[#1E293B] rounded-[4px] min-h-[350px] space-y-6">
-                <div className="text-center max-w-sm space-y-1.5">
-                  <div className="w-10 h-10 mx-auto rounded-full bg-orange-500/10 border border-orange-500/20 flex items-center justify-center text-orange-500 mb-2">
-                    <Search className="w-5 h-5" />
-                  </div>
-                  <h3 className="text-sm font-semibold text-slate-800 dark:text-slate-200">
-                    Search assets or inspect equipment
-                  </h3>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Enter an equipment tag, substation name, asset class, or NERC group parameter to
-                    audit operational telemetry.
-                  </p>
-                </div>
-
-                <div className="w-full max-w-md flex gap-2">
-                  <div className="flex-1 flex items-center bg-slate-100 dark:bg-[#1C222B] border border-slate-300 dark:border-[#2A313C] rounded-[2px] px-3 py-2">
-                    <Search className="w-4 h-4 text-slate-500 mr-2" />
-                    <input
-                      type="text"
-                      placeholder="Enter equipment tag (e.g. T-17, Feeder F-18, transformer)..."
-                      className="bg-transparent border-none text-slate-200 placeholder-slate-650 text-xs focus:outline-none w-full"
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          setSearchQuery((e.target as HTMLInputElement).value || " ");
-                        }
-                      }}
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-1.5 text-center">
-                  <span className="text-[9px] font-mono font-bold text-slate-500 uppercase tracking-wider block">
-                    Quick Suggestions
-                  </span>
-                  <div className="flex flex-wrap justify-center gap-2 max-w-lg">
-                    {[
-                      { label: "Inspect Reno Feeder F-18 line status", q: "Feeder F-18" },
-                      { label: "Inspect Tahoe Substation T1 winding status", q: "T1" },
-                      { label: "Show all transformers", q: "transformer" },
-                      { label: "Show all generators", q: "generator" },
-                    ].map((sug, idx) => (
-                      <button
-                        key={idx}
-                        onClick={() => setSearchQuery(sug.q)}
-                        className="text-[10px] bg-slate-100 dark:bg-[#151A21] hover:bg-slate-200 dark:hover:bg-[#1E293B] text-slate-600 dark:text-slate-400 border border-slate-200 dark:border-[#2A313C] px-2 py-0.5 rounded-[2px] transition-all"
-                      >
-                        {sug.label}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-              </div>
             ) : (
               <div className="flex-1 flex min-h-0 relative">
                 <div className="flex-1 flex flex-col min-h-0">

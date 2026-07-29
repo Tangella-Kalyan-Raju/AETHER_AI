@@ -59,7 +59,9 @@ def init_db():
             "reports:view": "Access to view generated system operations & compliance reports.",
             "reports:create": "Clearance to generate operations and compliance report logs.",
             "settings:view": "Clearance to view basic system parameters and configurations.",
-            "admin:view": "Global administration permissions check."
+            "admin:view": "Global administration permissions check.",
+            "operations:view": "Access to view operations telemetry events and status.",
+            "operations:manage": "Access to manage operations telemetry events and status."
         }
 
         seeded_perms = {}
@@ -77,18 +79,20 @@ def init_db():
             "Super Admin": list(permissions_data.keys()),
             "Grid Administrator": [
                 "dashboard:view", "grid:view", "grid:control", "assets:view",
-                "assets:manage", "policies:view", "policies:compile", "settings:view"
+                "assets:manage", "policies:view", "policies:compile", "settings:view",
+                "operations:view", "operations:manage"
             ],
             "Operations Engineer": [
                 "dashboard:view", "grid:view", "grid:control", "assets:view",
-                "policies:view", "settings:view"
+                "policies:view", "settings:view", "operations:view", "operations:manage"
             ],
             "Policy Analyst": [
                 "dashboard:view", "grid:view", "policies:view", "policies:compile",
-                "policies:deploy", "reports:view", "reports:create"
+                "policies:deploy", "reports:view", "reports:create", "operations:view",
+                "operations:manage"
             ],
             "Viewer": [
-                "dashboard:view", "reports:view"
+                "dashboard:view", "reports:view", "operations:view"
             ]
         }
 
@@ -868,8 +872,521 @@ def init_db():
                     optimization_preferences_json={"priority": "cost"}
                 )
             )
+                  # Seeding Phase 6.1 — Enterprise Asset Intelligence Foundation Models
+        from app.models.asset_models import (
+            AssetCategory, Asset, AssetLocation, AssetMetadata, AssetHierarchy, AssetConfiguration, AssetHistory, AssetRegistry,
+            AssetHealth, AssetMaintenance, InspectionRecord, ServiceRecord, AssetAIInsight, AssetRecommendationHistory, AssetLifecycle
+        )
+
+        if not db.query(AssetCategory).first():
+            logger.info("Seeding Asset Categories...")
+            generation = AssetCategory(name="Generation", description="Assets that generate electricity.")
+            storage = AssetCategory(name="Storage", description="Energy storage assets.")
+            transmission = AssetCategory(name="Transmission", description="Assets responsible for bulk transfer of electricity.")
+            distribution = AssetCategory(name="Distribution", description="Assets responsible for local distribution of electricity.")
+            db.add_all([generation, storage, transmission, distribution])
+            db.flush()
+
+            logger.info("Seeding Asset Configurations...")
+            configs = [
+                AssetConfiguration(key="default_region", value="Global", description="Default operational region view"),
+                AssetConfiguration(key="asset_visibility", value="All", description="Default visibility of assets"),
+                AssetConfiguration(key="category_settings", value="Standard", description="Default asset category profile"),
+                AssetConfiguration(key="display_preferences", value="List", description="Default display mode (List/Grid/Tree)"),
+                AssetConfiguration(key="sorting_preferences", value="name", description="Default sorting column"),
+                AssetConfiguration(key="default_filters", value="all", description="Default filters setting")
+            ]
+            db.add_all(configs)
+            db.flush()
+
+            logger.info("Seeding Assets Registry...")
+            # We seed diverse physical grid assets
+            # 1. Solar Farm (Generation)
+            sol_asset = Asset(asset_id="GPO-SOL-001", name="Sierra Solar Farm", type="Solar Farm", description="150MW utility-scale solar generation facility.", category_id=generation.id)
+            db.add(sol_asset)
+            db.flush()
+            db.add(AssetLocation(asset_id=sol_asset.id, address="Sierra Foothills Road", region="West Region", zone="Zone A", substation="Sierra Substation", latitude=39.54, longitude=-119.85))
+            db.add(AssetMetadata(asset_id=sol_asset.id, voltage_level=13.8, capacity=150.0, manufacturer="First Solar", model="Series 6 Plus", serial_number="SOL-99281-A", owner="GPO West Generation LLC", installation_date=datetime(2022, 5, 12), commission_date=datetime(2022, 6, 20), tags=["solar", "renewable", "west"], extra_attributes={"panels_count": 150000}))
+            db.add(AssetRegistry(asset_id=sol_asset.id, notes="Registered during initial platform commission."))
+            db.add(AssetHistory(asset_id=sol_asset.id, action="Registration", changed_by="System Seeder", after_value={"status": "active"}))
+            db.add(AssetHealth(asset_id=sol_asset.id, health_score=94.0, condition="Nominal", remaining_useful_life=12.5, efficiency=93.5, temperature=42.0, performance_index=95.0, utilization=48.0, availability=99.8))
+            db.add(AssetMaintenance(asset_id=sol_asset.id, predicted_failure=datetime(2027, 8, 20), failure_probability=0.03, criticality_score=65.0, maintenance_priority="Low", maintenance_schedule=datetime(2026, 11, 15)))
+            db.add(InspectionRecord(asset_id=sol_asset.id, inspected_at=datetime(2026, 1, 10), inspector="John Doe", result="Passed", notes="Inverter filters cleaned, visual check nominal."))
+            db.add(ServiceRecord(asset_id=sol_asset.id, serviced_at=datetime(2025, 6, 15), technician="Alice Smith", cost=1500.0, description="Annual panel cleaning and frame alignment check."))
+            db.add(AssetAIInsight(
+                asset_id=sol_asset.id,
+                recommendation="Optimize panel angle tracking profiles during afternoon thermal peaks.",
+                reasoning={
+                    "why_health_changed": "Health remains stable at 94%. Minimal degradation observed.",
+                    "why_failure_probability_increased": "Failure probability is nominal at 3%.",
+                    "operator_actions": "Verify tracker gear alignment, clean PV arrays during off-peak hours.",
+                    "operational_impact": "Uptime efficiency increase of +1.2% under extreme heat conditions."
+                },
+                root_cause="Minor inverter thermal throttling under solar noon peak loads.",
+                failure_explanation="Excessive heat limits inverter conversion efficiency slightly.",
+                maintenance_suggestion="Schedule visual inspections of cooling fans on inverters in Block C.",
+                operational_advice="Balance reactive power dispatch offset parameters during peak generation periods.",
+                replacement_recommendation="Inverter component refresh planned for Q3 2029.",
+                spare_part_recommendation="Inverter cooling fan replacement kits (Block C).",
+                confidence_score=0.88,
+                priority="Low",
+                expected_impact="Avoid active power deratings during high solar irradiance."
+            ))
+            db.add(AssetRecommendationHistory(asset_id=sol_asset.id, recommendation="Optimize panel angle tracking profiles.", priority="Low", action_taken="Approved", operator_notes="Tracker configuration adjusted successfully."))
+            db.add(AssetLifecycle(
+                asset_id=sol_asset.id,
+                stage="In Service",
+                age=4.2,
+                remaining_useful_life=12.5,
+                maintenance_cost=1500.0,
+                replacement_cost=12000000.0,
+                downtime_hours=12.5,
+                uptime_hours=8740.0,
+                availability=99.85,
+                performance_benchmark=95.0,
+                efficiency_trend=-0.5,
+                criticality_ranking=7,
+                lifecycle_cost=2500000.0,
+                risk_ranking=7
+            ))
+
+            # 2. Wind Farm (Generation)
+            wind_asset = Asset(asset_id="GPO-WND-002", name="Tehachapi Wind Farm", type="Wind Farm", description="200MW wind turbine park.", category_id=generation.id)
+            db.add(wind_asset)
+            db.flush()
+            db.add(AssetLocation(asset_id=wind_asset.id, address="Tehachapi Pass", region="West Region", zone="Zone B", substation="Tehachapi Collector Sub", latitude=35.12, longitude=-118.31))
+            db.add(AssetMetadata(asset_id=wind_asset.id, voltage_level=34.5, capacity=200.0, manufacturer="Vestas", model="V150-4.2MW", serial_number="WND-88392-V", owner="Tehachapi Wind Partners", installation_date=datetime(2021, 3, 10), commission_date=datetime(2021, 4, 15), tags=["wind", "renewable", "west"], extra_attributes={"turbines_count": 80}))
+            db.add(AssetRegistry(asset_id=wind_asset.id, notes="Wind generation asset connection established."))
+            db.add(AssetHistory(asset_id=wind_asset.id, action="Registration", changed_by="System Seeder", after_value={"status": "active"}))
+            db.add(AssetHealth(asset_id=wind_asset.id, health_score=88.5, condition="Nominal", remaining_useful_life=9.2, efficiency=86.2, temperature=58.0, performance_index=89.0, utilization=62.0, availability=98.5))
+            db.add(AssetMaintenance(asset_id=wind_asset.id, predicted_failure=datetime(2026, 12, 10), failure_probability=0.08, criticality_score=70.0, maintenance_priority="Low", maintenance_schedule=datetime(2026, 10, 22)))
+            db.add(InspectionRecord(asset_id=wind_asset.id, inspected_at=datetime(2026, 2, 14), inspector="John Doe", result="Passed", notes="Nacelle hydraulic seals look tight, minor gearbox wear."))
+            db.add(ServiceRecord(asset_id=wind_asset.id, serviced_at=datetime(2025, 8, 20), technician="Bob Jones", cost=4500.0, description="Lubricated pitch drives, yaw bearings, and replaced generator brushes."))
+            db.add(AssetAIInsight(
+                asset_id=wind_asset.id,
+                recommendation="Monitor gearbox vibration harmonics and yaw drive oil levels.",
+                reasoning={
+                    "why_health_changed": "Minor bearing wear signature detected in Turbines 12 and 15, health dropped 2%.",
+                    "why_failure_probability_increased": "Vibration frequency shifts raise failure risk to 8%.",
+                    "operator_actions": "Schedule vibration telemetry calibration and verify lubrication seals.",
+                    "operational_impact": "Prevents mechanical fatigue in rotor couplings, saving up to $45k in parts."
+                },
+                root_cause="High mechanical stress on gearbox bearings during strong seasonal wind peaks.",
+                failure_explanation="Micro-pitting on bearing races creates localized friction spikes.",
+                maintenance_suggestion="Analyze vibration spectra and extract gearbox oil sample for vibration diagnostics.",
+                operational_advice="Limit maximum rotational speed during high gust alerts if yaw system reports torque errors.",
+                replacement_recommendation="Gearbox overhaul scheduled for late 2027.",
+                spare_part_recommendation="High-speed shaft bearing assembly kit.",
+                confidence_score=0.85,
+                priority="Medium",
+                expected_impact="Minimize mechanical breakdown and structural fatigue."
+            ))
+            db.add(AssetRecommendationHistory(asset_id=wind_asset.id, recommendation="Inspect yaw drive oil levels.", priority="Medium", action_taken="Pending"))
+            db.add(AssetLifecycle(
+                asset_id=wind_asset.id,
+                stage="In Service",
+                age=5.3,
+                remaining_useful_life=9.2,
+                maintenance_cost=4500.0,
+                replacement_cost=25000000.0,
+                downtime_hours=42.0,
+                uptime_hours=8700.0,
+                availability=98.52,
+                performance_benchmark=89.0,
+                efficiency_trend=-1.2,
+                criticality_ranking=6,
+                lifecycle_cost=5200000.0,
+                risk_ranking=6
+            ))
+
+            # 3. Generator (Generation)
+            gen_asset = Asset(asset_id="GPO-GEN-003", name="Sierra Gas Gen 1", type="Generator", description="Fast-start peak load gas turbine generator.", category_id=generation.id)
+            db.add(gen_asset)
+            db.flush()
+            db.add(AssetLocation(asset_id=gen_asset.id, address="Industrial Parkway Lot 3", region="West Region", zone="Zone A", substation="Sierra Substation", latitude=39.52, longitude=-119.81))
+            db.add(AssetMetadata(asset_id=gen_asset.id, voltage_level=13.8, capacity=100.0, manufacturer="GE Power", model="LM6000", serial_number="GEN-55410-G", owner="GPO Corp", installation_date=datetime(2019, 8, 20), commission_date=datetime(2019, 9, 30), tags=["gas", "thermal", "peaker"], extra_attributes={"generator_type": "Gas Turbine", "fuel_type": "Natural Gas"}))
+            db.add(AssetRegistry(asset_id=gen_asset.id, notes="Peak load backup dispatch generator."))
+            db.add(AssetHistory(asset_id=gen_asset.id, action="Registration", changed_by="System Seeder", after_value={"status": "active"}))
+            db.add(AssetHealth(asset_id=gen_asset.id, health_score=91.0, condition="Nominal", remaining_useful_life=14.0, efficiency=89.5, temperature=420.0, performance_index=92.0, utilization=15.0, availability=99.9))
+            db.add(AssetMaintenance(asset_id=gen_asset.id, predicted_failure=datetime(2028, 5, 12), failure_probability=0.04, criticality_score=85.0, maintenance_priority="Low", maintenance_schedule=datetime(2026, 12, 15)))
+            db.add(InspectionRecord(asset_id=gen_asset.id, inspected_at=datetime(2026, 3, 20), inspector="Sarah Connor", result="Passed", notes="Turbine blade boroscope inspection completed, zero cracks."))
+            db.add(ServiceRecord(asset_id=gen_asset.id, serviced_at=datetime(2025, 9, 5), technician="Kyle Reese", cost=12000.0, description="Fuel nozzle calibration and combustion chamber liner swap."))
+            db.add(AssetAIInsight(
+                asset_id=gen_asset.id,
+                recommendation="Perform thermal cycle validation and hot gas path sensor recalibration.",
+                reasoning={
+                    "why_health_changed": "Nominal thermal profile with minor exhaust temperature dispersion. Uptime health 91%.",
+                    "why_failure_probability_increased": "Start-stop cycling frequency has stabilized.",
+                    "operator_actions": "Recalibrate exhaust gas thermocouples during the next maintenance window.",
+                    "operational_impact": "Maintains combustion heat balance, optimizing fuel efficiency by +0.5%."
+                },
+                root_cause="Minor oxidation on thermocouple connectors in the generator exhaust plenum.",
+                failure_explanation="High temperature oxidation causes sensor signal drift over continuous thermal cycles.",
+                maintenance_suggestion="Inspect wiring harnesses in the turbine casing and verify sensor insulation.",
+                operational_advice="Permit extended cool-down cycles after peak dispatches to minimize thermal shocks.",
+                replacement_recommendation="Exhaust plenum thermocouple array replacement in 2028.",
+                spare_part_recommendation="Type K thermocouple spare kit.",
+                confidence_score=0.90,
+                priority="Low",
+                expected_impact="Ensure accurate exhaust diagnostics and prevent combustion imbalance alarms."
+            ))
+            db.add(AssetRecommendationHistory(asset_id=gen_asset.id, recommendation="Verify fuel nozzle calibration.", priority="Low", action_taken="Approved", operator_notes="Nozzle clean-up completed."))
+            db.add(AssetLifecycle(
+                asset_id=gen_asset.id,
+                stage="In Service",
+                age=6.8,
+                remaining_useful_life=14.0,
+                maintenance_cost=12000.0,
+                replacement_cost=45000000.0,
+                downtime_hours=5.0,
+                uptime_hours=8750.0,
+                availability=99.92,
+                performance_benchmark=92.0,
+                efficiency_trend=-0.8,
+                criticality_ranking=5,
+                lifecycle_cost=8400000.0,
+                risk_ranking=5
+            ))
+
+            # 4. Battery (Storage)
+            bat_asset = Asset(asset_id="GPO-BAT-004", name="Tahoe Battery storage", type="Battery Energy Storage System", description="50MW/200MWh Lithium-ion battery facility.", category_id=storage.id)
+            db.add(bat_asset)
+            db.flush()
+            db.add(AssetLocation(asset_id=bat_asset.id, address="Lake Tahoe Basin Road", region="East Region", zone="Zone C", substation="Tahoe Substation", latitude=39.10, longitude=-120.03))
+            db.add(AssetMetadata(asset_id=bat_asset.id, voltage_level=13.8, capacity=50.0, manufacturer="Tesla", model="Megapack 2XL", serial_number="BAT-11002-T", owner="East Grid Storage LLC", installation_date=datetime(2023, 1, 15), commission_date=datetime(2023, 2, 28), tags=["battery", "storage", "east"], extra_attributes={"battery_type": "Lithium-Ion"}))
+            db.add(AssetRegistry(asset_id=bat_asset.id, notes="BESS integration completed."))
+            db.add(AssetHistory(asset_id=bat_asset.id, action="Registration", changed_by="System Seeder", after_value={"status": "active"}))
+            db.add(AssetHealth(asset_id=bat_asset.id, health_score=96.5, condition="Nominal", remaining_useful_life=8.0, efficiency=91.0, temperature=28.5, performance_index=97.0, utilization=75.0, availability=99.9))
+            db.add(AssetMaintenance(asset_id=bat_asset.id, predicted_failure=datetime(2029, 2, 28), failure_probability=0.02, criticality_score=90.0, maintenance_priority="Low", maintenance_schedule=datetime(2026, 9, 10)))
+            db.add(InspectionRecord(asset_id=bat_asset.id, inspected_at=datetime(2026, 4, 15), inspector="Jane Miller", result="Passed", notes="Thermal management systems functioning within norm."))
+            db.add(ServiceRecord(asset_id=bat_asset.id, serviced_at=datetime(2025, 12, 10), technician="Mark Wahlberg", cost=800.0, description="Coolant top-up and battery management system firmware flash."))
+            db.add(AssetAIInsight(
+                asset_id=bat_asset.id,
+                recommendation="Balance state of charge profiles and monitor cell temperature differentials.",
+                reasoning={
+                    "why_health_changed": "High performance rating of 96.5%. Cell balancing algorithms are active.",
+                    "why_failure_probability_increased": "Lowest grid failure risk at 2%.",
+                    "operator_actions": "Initiate automated cell calibration cycle during off-peak load curves.",
+                    "operational_impact": "Prevents cell capacity degradation, extending BESS lifespan by +6 months."
+                },
+                root_cause="Slight impedance variations among parallel cell modules in Rack 5.",
+                failure_explanation="Impedance imbalance leads to cell-to-cell voltage dispersion during rapid dispatches.",
+                maintenance_suggestion="Run a low-rate balancing cycle and audit HVAC duct efficiency in Rack 5.",
+                operational_advice="Avoid continuous high C-rate dispatches when state of charge falls below 10%.",
+                replacement_recommendation="Battery module capacity upgrade scheduled for Q4 2030.",
+                spare_part_recommendation="HVAC filter kits and battery contactor spares.",
+                confidence_score=0.95,
+                priority="Low",
+                expected_impact="Maintain battery system state-of-health and avoid rapid capacity fade."
+            ))
+            db.add(AssetRecommendationHistory(asset_id=bat_asset.id, recommendation="Balance state of charge profiles.", priority="Low", action_taken="Approved", operator_notes="BMS rebalancing sequence completed."))
+            db.add(AssetLifecycle(
+                asset_id=bat_asset.id,
+                stage="In Service",
+                age=3.4,
+                remaining_useful_life=8.0,
+                maintenance_cost=800.0,
+                replacement_cost=18000000.0,
+                downtime_hours=1.2,
+                uptime_hours=8753.0,
+                availability=99.98,
+                performance_benchmark=97.0,
+                efficiency_trend=-0.2,
+                criticality_ranking=8,
+                lifecycle_cost=1100000.0,
+                risk_ranking=8
+            ))
+
+            # 5. Transformer (Transmission)
+            xfmr_asset = Asset(asset_id="GPO-XFMR-005", name="Sierra XFMR 1", type="Transformer", description="138kV/13.8kV primary power transformer.", category_id=transmission.id)
+            db.add(xfmr_asset)
+            db.flush()
+            db.add(AssetLocation(asset_id=xfmr_asset.id, address="Sierra Substation yard", region="West Region", zone="Zone A", substation="Sierra Substation", latitude=39.53, longitude=-119.82))
+            db.add(AssetMetadata(asset_id=xfmr_asset.id, voltage_level=138.0, capacity=50.0, manufacturer="Siemens", model="S-50MVA", serial_number="XFMR-22019-S", owner="GPO Corp", installation_date=datetime(2018, 10, 11), commission_date=datetime(2018, 11, 1), tags=["transformer", "substation", "transmission"], extra_attributes={"voltage_rating": "138kV/13.8kV", "transformer_type": "Step-Down"}))
+            db.add(AssetRegistry(asset_id=xfmr_asset.id, notes="Substation transformer registered."))
+            db.add(AssetHistory(asset_id=xfmr_asset.id, action="Registration", changed_by="System Seeder", after_value={"status": "active"}))
+            db.add(AssetHealth(asset_id=xfmr_asset.id, health_score=68.0, condition="Warning", remaining_useful_life=3.5, efficiency=98.1, temperature=85.0, performance_index=72.0, utilization=85.0, availability=96.2))
+            db.add(AssetMaintenance(asset_id=xfmr_asset.id, predicted_failure=datetime(2026, 8, 15), failure_probability=0.28, criticality_score=95.0, maintenance_priority="High", maintenance_schedule=datetime(2026, 8, 2)))
+            db.add(InspectionRecord(asset_id=xfmr_asset.id, inspected_at=datetime(2026, 5, 5), inspector="Jane Miller", result="Needs Action", notes="Oil dissolved gas analysis shows high acetylene, potential arc."))
+            db.add(ServiceRecord(asset_id=xfmr_asset.id, serviced_at=datetime(2025, 10, 11), technician="Tom Cruise", cost=15000.0, description="Gasket replacement, oil filtration, and bushing cleaning."))
+            db.add(AssetAIInsight(
+                asset_id=xfmr_asset.id,
+                recommendation="Perform transformer oil filtration, degasification, and bushing thermal scan.",
+                reasoning={
+                    "why_health_changed": "Dissolved gas analysis indicates acetylene levels exceeding critical limits. Health dropped to 68%.",
+                    "why_failure_probability_increased": "High concentration of combustible gases raises failure probability to 28%.",
+                    "operator_actions": "Schedule immediate offline oil filtration, purge gas, and inspect primary bushings.",
+                    "operational_impact": "Prevents catastrophic insulation breakdown or explosive failure at Sierra Substation."
+                },
+                root_cause="Low-energy dielectric discharge (arcing) within the winding paper insulation matrix.",
+                failure_explanation="Moisture absorption and localized heating degrade winding paper, generating flammable gases.",
+                maintenance_suggestion="Execute oil degassing, pull insulation paper samples, and perform winding impedance scan.",
+                operational_advice="Derate transformer capacity by 20% to prevent temperature-induced winding stress expansion.",
+                replacement_recommendation="Winding insulation paper upgrade or unit replacement planned for 2028.",
+                spare_part_recommendation="138kV bushing replacement kits and tap changer contact springs.",
+                confidence_score=0.92,
+                priority="High",
+                expected_impact="Restore transformer dielectric strength, prevent high-energy short circuits."
+            ))
+            db.add(AssetRecommendationHistory(asset_id=xfmr_asset.id, recommendation="Perform transformer oil filtration.", priority="High", action_taken="Pending"))
+            db.add(AssetLifecycle(
+                asset_id=xfmr_asset.id,
+                stage="Maintenance Required",
+                age=7.8,
+                remaining_useful_life=3.5,
+                maintenance_cost=15000.0,
+                replacement_cost=8000000.0,
+                downtime_hours=120.0,
+                uptime_hours=8400.0,
+                availability=96.21,
+                performance_benchmark=72.0,
+                efficiency_trend=-4.5,
+                criticality_ranking=1,
+                lifecycle_cost=3100000.0,
+                risk_ranking=1
+            ))
+
+            # 6. Transmission Line (Transmission)
+            line_asset = Asset(asset_id="GPO-LINE-006", name="Sierra-Reno Line 1", type="Transmission Line", description="138kV transmission line corridor connecting Sierra and Reno.", category_id=transmission.id)
+            db.add(line_asset)
+            db.flush()
+            db.add(AssetLocation(asset_id=line_asset.id, address="Corridor Route 1A", region="North Region", zone="Zone N", substation="Sierra Substation", latitude=39.52, longitude=-119.81))
+            db.add(AssetMetadata(asset_id=line_asset.id, voltage_level=138.0, capacity=100.0, manufacturer="Southwire", model="ACSR 795", serial_number="LN-33041-A", owner="GPO Corp", installation_date=datetime(2015, 6, 15), commission_date=datetime(2015, 7, 1), tags=["transmission-line", "corridor", "north"], extra_attributes={"voltage": 138.0, "length": 45.0, "connected_regions": "West Region, North Region"}))
+            db.add(AssetRegistry(asset_id=line_asset.id, notes="Bulk transmission line corridor registered."))
+            db.add(AssetHistory(asset_id=line_asset.id, action="Registration", changed_by="System Seeder", after_value={"status": "active"}))
+            db.add(AssetHealth(asset_id=line_asset.id, health_score=92.0, condition="Nominal", remaining_useful_life=18.0, efficiency=96.5, temperature=35.0, performance_index=93.0, utilization=40.0, availability=99.5))
+            db.add(AssetMaintenance(asset_id=line_asset.id, predicted_failure=datetime(2027, 9, 12), failure_probability=0.05, criticality_score=80.0, maintenance_priority="Medium", maintenance_schedule=datetime(2026, 9, 15)))
+            db.add(InspectionRecord(asset_id=line_asset.id, inspected_at=datetime(2026, 5, 20), inspector="Sarah Connor", result="Passed", notes="Drone thermography check nominal, no hot spots on line joints."))
+            db.add(ServiceRecord(asset_id=line_asset.id, serviced_at=datetime(2024, 6, 15), technician="GPO Crew 4", cost=25000.0, description="Vegetation clearing along corridor Route 1A and tower base reinforcement."))
+            db.add(AssetAIInsight(
+                asset_id=line_asset.id,
+                recommendation="Conduct visual corridor inspections for line sag and vegetation clearances.",
+                reasoning={
+                    "why_health_changed": "High capacity line segment with 92% health. Minor sag variation under summer peak loading.",
+                    "why_failure_probability_increased": "Potential wind-induced conductor swing or ground clearance issues.",
+                    "operator_actions": "Verify corridor laser scanner survey data to confirm clearance margins.",
+                    "operational_impact": "Prevents vegetation contact outages during heavy wind loading events."
+                },
+                root_cause="Elevated thermal expansion of ACSR Conductor under prolonged peak current dispatch.",
+                failure_explanation="Line sag increases with conductor temperature, decreasing clearance to underlying trees.",
+                maintenance_suggestion="Conduct LiDAR flyover for clearance profiling and dispatch vegetation trim crews if needed.",
+                operational_advice="Utilize Dynamic Line Rating (DLR) to dynamically manage dispatch bounds during wind peaks.",
+                replacement_recommendation="Conductor restringing scheduled for 2033.",
+                spare_part_recommendation="Line vibration damper spares and conductor splicing sleeves.",
+                confidence_score=0.87,
+                priority="Medium",
+                expected_impact="Prevent line-to-tree flashovers and maximize line transmission limits."
+            ))
+            db.add(AssetRecommendationHistory(asset_id=line_asset.id, recommendation="Inspect sag clearance.", priority="Medium", action_taken="Dismissed", operator_notes="Vegetation cleared recently, clearances are safe."))
+            db.add(AssetLifecycle(
+                asset_id=line_asset.id,
+                stage="In Service",
+                age=11.1,
+                remaining_useful_life=18.0,
+                maintenance_cost=25000.0,
+                replacement_cost=15000000.0,
+                downtime_hours=15.0,
+                uptime_hours=8700.0,
+                availability=99.54,
+                performance_benchmark=93.0,
+                efficiency_trend=-0.3,
+                criticality_ranking=4,
+                lifecycle_cost=4120000.0,
+                risk_ranking=4
+            ))
+
+            # 7. Substation (Distribution)
+            sub_asset = Asset(asset_id="GPO-SUB-007", name="Sierra Substation", type="Substation", description="Main transmission and distribution hub substation.", category_id=distribution.id)
+            db.add(sub_asset)
+            db.flush()
+            db.add(AssetLocation(asset_id=sub_asset.id, address="Sierra Foothills Bypass", region="West Region", zone="Zone A", substation="Sierra Substation", latitude=39.5296, longitude=-119.8138))
+            db.add(AssetMetadata(asset_id=sub_asset.id, voltage_level=138.0, capacity=150.0, manufacturer="ABB", model="Substation Hub 100", serial_number="SUB-00912-B", owner="GPO Corp", installation_date=datetime(2015, 5, 1), commission_date=datetime(2015, 6, 1), tags=["substation", "hub", "west"], extra_attributes={"voltage_level": 138.0, "feeders_count": 12, "region": "West Region"}))
+            db.add(AssetRegistry(asset_id=sub_asset.id, notes="Main regional substation hub."))
+            db.add(AssetHistory(asset_id=sub_asset.id, action="Registration", changed_by="System Seeder", after_value={"status": "active"}))
+            db.add(AssetHealth(asset_id=sub_asset.id, health_score=95.0, condition="Nominal", remaining_useful_life=22.0, efficiency=99.2, temperature=38.0, performance_index=96.0, utilization=55.0, availability=99.9))
+            db.add(AssetMaintenance(asset_id=sub_asset.id, predicted_failure=datetime(2030, 4, 15), failure_probability=0.01, criticality_score=98.0, maintenance_priority="Low", maintenance_schedule=datetime(2027, 2, 10)))
+            db.add(InspectionRecord(asset_id=sub_asset.id, inspected_at=datetime(2026, 6, 12), inspector="John Doe", result="Passed", notes="Substation yard gravel, fencing, and safety markings in excellent condition."))
+            db.add(ServiceRecord(asset_id=sub_asset.id, serviced_at=datetime(2025, 5, 1), technician="GPO Crew 1", cost=5000.0, description="Annual grounding grid resistance testing and battery room ventilation repair."))
+            db.add(AssetAIInsight(
+                asset_id=sub_asset.id,
+                recommendation="Perform thermal mapping of switchyard connections and verify auxiliary supply backup systems.",
+                reasoning={
+                    "why_health_changed": "Optimal substation yard health of 95%. Auxiliary DC systems fully functional.",
+                    "why_failure_probability_increased": "Lowest outage signature detected across the West Region grid.",
+                    "operator_actions": "Schedule routine battery discharge test for the auxiliary DC panel.",
+                    "operational_impact": "Prevents protection relay lockout during control house power outages."
+                },
+                root_cause="Minor dust build-up on outdoor insulator stacks inside the distribution section.",
+                failure_explanation="Contaminants on insulators create leakage current paths, increasing flashover risks during high humidity.",
+                maintenance_suggestion="Perform pressure washing on insulator stacks and verify ground connection resistances.",
+                operational_advice="No operating limitations. Grid topology routing capacity is 100%.",
+                replacement_recommendation="Substation protection panels replacement scheduled for 2035.",
+                spare_part_recommendation="Insulator stacks and auxiliary DC chargers.",
+                confidence_score=0.91,
+                priority="Low",
+                expected_impact="Ensure protection systems remain fully operational under contingency events."
+            ))
+            db.add(AssetRecommendationHistory(asset_id=sub_asset.id, recommendation="Perform thermal mapping of yard.", priority="Low", action_taken="Approved", operator_notes="Thermal scans nominal."))
+            db.add(AssetLifecycle(
+                asset_id=sub_asset.id,
+                stage="In Service",
+                age=11.2,
+                remaining_useful_life=22.0,
+                maintenance_cost=5000.0,
+                replacement_cost=65000000.0,
+                downtime_hours=0.5,
+                uptime_hours=8759.0,
+                availability=99.99,
+                performance_benchmark=96.0,
+                efficiency_trend=-0.1,
+                criticality_ranking=9,
+                lifecycle_cost=9200000.0,
+                risk_ranking=9
+            ))
+
+            # 8. Breaker (Distribution)
+            brk_asset = Asset(asset_id="GPO-BRK-008", name="Sierra Line Breaker", type="Breaker", description="138kV high-voltage sulfur hexafluoride (SF6) circuit breaker.", category_id=distribution.id)
+            db.add(brk_asset)
+            db.flush()
+            db.add(AssetLocation(asset_id=brk_asset.id, address="Sierra Substation Switchyard", region="West Region", zone="Zone A", substation="Sierra Substation", latitude=39.53, longitude=-119.82))
+            db.add(AssetMetadata(asset_id=brk_asset.id, voltage_level=138.0, capacity=2.0, manufacturer="Schneider", model="SF6-138", serial_number="BRK-00234-C", owner="GPO Corp", installation_date=datetime(2020, 2, 14), commission_date=datetime(2020, 3, 1), tags=["breaker", "switchyard", "west"], extra_attributes={"breaker_type": "SF6 gas", "voltage_rating": "138kV"}))
+            db.add(AssetRegistry(asset_id=brk_asset.id, notes="Substation line protection breaker."))
+            db.add(AssetHistory(asset_id=brk_asset.id, action="Registration", changed_by="System Seeder", after_value={"status": "active"}))
+            db.add(AssetHealth(asset_id=brk_asset.id, health_score=78.0, condition="Warning", remaining_useful_life=2.1, efficiency=99.9, temperature=48.0, performance_index=80.0, utilization=10.0, availability=98.0))
+            db.add(AssetMaintenance(asset_id=brk_asset.id, predicted_failure=datetime(2026, 9, 28), failure_probability=0.18, criticality_score=88.0, maintenance_priority="Medium", maintenance_schedule=datetime(2026, 8, 8)))
+            db.add(InspectionRecord(asset_id=brk_asset.id, inspected_at=datetime(2026, 6, 18), inspector="Jane Miller", result="Passed", notes="SF6 pressure slightly low but above lock-out threshold."))
+            db.add(ServiceRecord(asset_id=brk_asset.id, serviced_at=datetime(2025, 2, 14), technician="Bob Jones", cost=3200.0, description="Mechanism lubrication, contact resistance check, and SF6 gas top-up."))
+            db.add(AssetAIInsight(
+                asset_id=brk_asset.id,
+                recommendation="Top up SF6 gas insulation chambers and verify compressor operating frequency.",
+                reasoning={
+                    "why_health_changed": "SF6 pressure telemetry reports a slow downward slope, dropping health to 78%.",
+                    "why_failure_probability_increased": "Low gas density decreases arc extinguishing capacity, raising failure rate to 18%.",
+                    "operator_actions": "Re-pressurize SF6 chamber to 6.2 bar and perform leak detection on seals.",
+                    "operational_impact": "Ensures successful arc interruption during distribution fault clearings."
+                },
+                root_cause="Micro-leakage on the O-ring seals of the primary breaker pressure indicator port.",
+                failure_explanation="Elastic seal wear over time allows gas molecular migration, reducing chamber density.",
+                maintenance_suggestion="Conduct leak soap spray test and replace indicator gasket seals.",
+                operational_advice="Avoid peak feeder loading dispatches if SF6 density indicators enter red alarm zone.",
+                replacement_recommendation="Breaker mechanism swap scheduled for late 2028.",
+                spare_part_recommendation="Breaker seal kit, SF6 gas cylinder, contact lubrication.",
+                confidence_score=0.89,
+                priority="Medium",
+                expected_impact="Prevent arc restrikes and safeguard substation feeder systems."
+            ))
+            db.add(AssetRecommendationHistory(asset_id=brk_asset.id, recommendation="Top up SF6 gas density.", priority="Medium", action_taken="Pending"))
+            db.add(AssetLifecycle(
+                asset_id=brk_asset.id,
+                stage="Maintenance Required",
+                age=6.4,
+                remaining_useful_life=2.1,
+                maintenance_cost=3200.0,
+                replacement_cost=750000.0,
+                downtime_hours=55.0,
+                uptime_hours=8600.0,
+                availability=98.02,
+                performance_benchmark=80.0,
+                efficiency_trend=-2.1,
+                criticality_ranking=3,
+                lifecycle_cost=180000.0,
+                risk_ranking=3
+            ))
+
+            # 9. Relay (Distribution)
+            rly_asset = Asset(asset_id="GPO-RLY-009", name="Sierra Feeder Relay", type="Relay", description="Microprocessor-based feeder protection relay system.", category_id=distribution.id)
+            db.add(rly_asset)
+            db.flush()
+            db.add(AssetLocation(asset_id=rly_asset.id, address="Sierra Control House Rack 2", region="West Region", zone="Zone A", substation="Sierra Substation", latitude=39.529, longitude=-119.813))
+            db.add(AssetMetadata(asset_id=rly_asset.id, voltage_level=13.8, capacity=0.01, manufacturer="Schweitzer Engineering Labs", model="SEL-751", serial_number="RLY-11002-S", owner="GPO Corp", installation_date=datetime(2021, 6, 20), commission_date=datetime(2021, 7, 5), tags=["relay", "protection", "west"], extra_attributes={"relay_type": "Overcurrent Protection", "protection_zone": "Feeder 4"}))
+            db.add(AssetRegistry(asset_id=rly_asset.id, notes="Feeder level diagnostic protection relay."))
+            db.add(AssetHistory(asset_id=rly_asset.id, action="Registration", changed_by="System Seeder", after_value={"status": "active"}))
+            db.add(AssetHealth(asset_id=rly_asset.id, health_score=99.5, condition="Nominal", remaining_useful_life=8.5, efficiency=100.0, temperature=30.0, performance_index=99.0, utilization=5.0, availability=100.0))
+            db.add(AssetMaintenance(asset_id=rly_asset.id, predicted_failure=datetime(2029, 6, 20), failure_probability=0.005, criticality_score=92.0, maintenance_priority="Low", maintenance_schedule=datetime(2027, 3, 15)))
+            db.add(InspectionRecord(asset_id=rly_asset.id, inspected_at=datetime(2026, 7, 5), inspector="Sarah Connor", result="Passed", notes="Secondary injection test nominal, relay operating trip signals correct."))
+            db.add(ServiceRecord(asset_id=rly_asset.id, serviced_at=datetime(2025, 6, 20), technician="Kyle Reese", cost=1200.0, description="Re-calibrated overcurrent pick-up curves and updated firmware."))
+            db.add(AssetAIInsight(
+                asset_id=rly_asset.id,
+                recommendation="Perform periodic backup configuration archiving and firmware updates.",
+                reasoning={
+                    "why_health_changed": "High performance rating of 99.5%. Communication telemetry is fully operational.",
+                    "why_failure_probability_increased": "Lowest failure probability on the distribution rack.",
+                    "operator_actions": "Verify SCADA telemetry loops and backup settings profiles.",
+                    "operational_impact": "Ensures exact fault clearance times matching system protection coordination curves."
+                },
+                root_cause="None. System diagnostics report 100% logic integrity.",
+                failure_explanation="No hardware or software failure mechanisms currently active.",
+                maintenance_suggestion="Run a remote secondary injection relay trip test and download event files.",
+                operational_advice="None. Relay is fully ready to trip and isolate faults.",
+                replacement_recommendation="Relay unit replacement scheduled for 2031.",
+                spare_part_recommendation="Backup auxiliary power card.",
+                confidence_score=0.99,
+                priority="Low",
+                expected_impact="Safeguard feeder lines from downstream phase faults."
+            ))
+            db.add(AssetRecommendationHistory(asset_id=rly_asset.id, recommendation="Archive backup configurations.", priority="Low", action_taken="Approved", operator_notes="Config backup saved to database."))
+            db.add(AssetLifecycle(
+                asset_id=rly_asset.id,
+                stage="In Service",
+                age=5.1,
+                remaining_useful_life=8.5,
+                maintenance_cost=1200.0,
+                replacement_cost=8500.0,
+                downtime_hours=0.0,
+                uptime_hours=8760.0,
+                availability=100.0,
+                performance_benchmark=99.0,
+                efficiency_trend=0.0,
+                criticality_ranking=2,
+                lifecycle_cost=15000.0,
+                risk_ranking=2
+            ))
+
+            # Seed Hierarchy links
+            # Grid ➔ Region (West Region) ➔ Transmission Network ➔ Substation ➔ Feeder/Asset
+            # Let's map parent/child:
+            # Substation (Sierra Substation) is parent of Transformer (Sierra XFMR 1), Breaker (Sierra Line Breaker), and Relay (Sierra Feeder Relay)
+            db.add(AssetHierarchy(parent_id=None, child_id=sub_asset.id, level="Substation"))
+            db.add(AssetHierarchy(parent_id=sub_asset.id, child_id=xfmr_asset.id, level="Transformer"))
+            db.add(AssetHierarchy(parent_id=sub_asset.id, child_id=brk_asset.id, level="Breaker"))
+            db.add(AssetHierarchy(parent_id=sub_asset.id, child_id=rly_asset.id, level="Relay"))
+            
+            db.add(AssetHierarchy(parent_id=sub_asset.id, child_id=sol_asset.id, level="Solar Farm"))
+            db.add(AssetHierarchy(parent_id=sub_asset.id, child_id=gen_asset.id, level="Generator"))
+            
+            # Additional Substations mapping
+            reno_sub = Asset(asset_id="GPO-SUB-RENO", name="Reno Substation", type="Substation", description="Distribution substation serving Reno city center.", category_id=distribution.id)
+            tahoe_sub = Asset(asset_id="GPO-SUB-TAHOE", name="Tahoe Substation", type="Substation", description="Substation connecting Tahoe hydro generation and battery units.", category_id=transmission.id)
+            db.add_all([reno_sub, tahoe_sub])
+            db.flush()
+            
+            # Map their hierarchies
+            db.add(AssetHierarchy(parent_id=None, child_id=reno_sub.id, level="Substation"))
+            db.add(AssetHierarchy(parent_id=None, child_id=tahoe_sub.id, level="Substation"))
+            db.add(AssetHierarchy(parent_id=reno_sub.id, child_id=line_asset.id, level="Transmission Line"))
+            db.add(AssetHierarchy(parent_id=tahoe_sub.id, child_id=bat_asset.id, level="Battery Energy Storage System"))
 
         db.commit()
+
+        # Seed AI Prompt templates if not already present
+        from app.models.ai_models import AIPromptTemplate
+        if not db.query(AIPromptTemplate).first():
+            logger.info("Seeding AI Prompt Templates...")
+            db.add_all([
+                AIPromptTemplate(name="Enterprise System Prompt", template="You are the Enterprise AI Grid Copilot. Return explainable structured recommendations.", version="1.0.0", is_active=True),
+                AIPromptTemplate(name="Executive Summary Prompt", template="Summarize key grid metrics and cost trends.", version="1.0.0", is_active=True),
+                AIPromptTemplate(name="Recommendation Prompt", template="Provide action items for warnings.", version="1.0.0", is_active=True)
+            ])
+            db.commit()
+
+        # Ensure digital twin asset registry is synchronized from physical database on startup
+        try:
+            from app.services.digital_twin.engine import DigitalTwinEngine
+            DigitalTwinEngine(db).sync_physical_to_registry()
+            db.commit()
+            logger.info("Digital twin asset registry synchronized successfully.")
+        except Exception as sync_err:
+            logger.error(f"Error synchronizing digital twin registry: {sync_err}")
 
         logger.info("Database seeding completed successfully.")
     except Exception as e:

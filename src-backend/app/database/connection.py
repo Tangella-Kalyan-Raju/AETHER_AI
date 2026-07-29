@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import time
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, Session
@@ -25,13 +28,10 @@ try:
     engine = create_engine(
     DATABASE_URL,
     echo=False,  # Set to True only for deep debugging
-    pool_size=20,
-    max_overflow=40,
-    pool_pre_ping=True, # Proactively checks connection health
-    pool_recycle=3600   # Recycle connections after an hour
+    **engine_args
 )
 except Exception as e:
-    print(f"[GPO-DB] Critical: Engine initialization failure: {e}")
+    logger.info(f"[GPO-DB] Critical: Engine initialization failure: {e}")
     raise DatabaseConnectionError("Failed to initialize database engine.", str(e))
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -111,6 +111,6 @@ def dispose_engine():
     """Graceful shutdown hook clearing the connection pool engines."""
     try:
         engine.dispose()
-        print("[GPO-DB] Connection pool cleared gracefully.")
+        logger.info("[GPO-DB] Connection pool cleared gracefully.")
     except Exception as e:
-        print(f"[GPO-DB] Error cleaning up connection pool: {e}")
+        logger.info(f"[GPO-DB] Error cleaning up connection pool: {e}")

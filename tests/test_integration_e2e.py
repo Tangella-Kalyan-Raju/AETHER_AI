@@ -11,7 +11,7 @@ def test_telemetry_health():
 
 def test_forecast_integration():
     # Verify the forecasting engine API is up
-    response = client.get("/api/v1/forecasting/forecast/demand")
+    response = client.get("/api/v1/forecasting/demand")
     # Even if empty or not authenticated, ensure it doesn't 500
     assert response.status_code in [200, 401, 403]
 

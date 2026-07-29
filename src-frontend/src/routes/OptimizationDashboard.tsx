@@ -97,10 +97,7 @@ export default function OptimizationDashboard() {
   // Retrieve logs and results for selected job
   useEffect(() => {
     if (selectedJobId) {
-      const match = history.find((h) => h.job_id === selectedJobId);
-      if (match) {
-        fetchLogs(match.id);
-      }
+      fetchLogs(selectedJobId);
       fetchDetailedResults(selectedJobId);
       fetchFinancialResults(selectedJobId);
       fetchDecisionResults(selectedJobId);
@@ -110,7 +107,7 @@ export default function OptimizationDashboard() {
       setDecisionResults(null);
       setActiveLogs("Select an active job or history record to load process parameters.");
     }
-  }, [selectedJobId, history]);
+  }, [selectedJobId]);
 
   const fetchConfigs = async () => {
     try {
@@ -142,12 +139,13 @@ export default function OptimizationDashboard() {
     }
   };
 
-  const fetchLogs = async (historyId: string) => {
+  const fetchLogs = async (jobId: string) => {
     try {
-      const res = await api.get(`/api/v1/optimization/history/${historyId}/logs`);
+      const res = await api.get(`/api/v1/optimization/jobs/${jobId}/logs`);
       setActiveLogs(res.data.logs || "No process logs available.");
     } catch (e) {
       console.error("Error fetching logs", e);
+      setActiveLogs("No process logs available.");
     }
   };
 
@@ -1550,7 +1548,6 @@ export default function OptimizationDashboard() {
                         key={h.id}
                         onClick={() => {
                           setSelectedJobId(h.job_id);
-                          fetchLogs(h.id);
                         }}
                         className="hover:bg-slate-50 dark:hover:bg-[#151A21]/30 cursor-pointer"
                       >

@@ -26,7 +26,7 @@ from app.database.connection import SessionLocal
 from app.core.streaming import event_bus
 
 # Import routers
-from app.routers import auth, users, grid_assets, policies, incidents
+from app.routers import auth, users, grid_assets, assets, policies, incidents
 from app.routers import notifications, reports, audit_logs, system_settings, health, digital_twin
 from app.routers import substations, buses, transmission_lines, transformers, generators, loads, switches
 from app.routers import engineering_api, monitoring, integration, events, alarms, ops_incidents, forecasting, optimization, ai_intelligence, scenarios, simulation, analysis, training, optimization_analytics, generation, dashboard, datasets, weather
@@ -246,6 +246,7 @@ async def api_index(request: Request):
 app.include_router(auth.router,            prefix="/api/v1/auth",            tags=["Authentication"])
 app.include_router(users.router,           prefix="/api/v1/users",           tags=["Users"])
 app.include_router(grid_assets.router,     prefix="/api/v1/grid-assets",     tags=["Grid Assets"])
+app.include_router(assets.router,          prefix="/api/v1/assets",          tags=["Asset Intelligence"])
 app.include_router(policies.router,        prefix="/api/v1/policies",        tags=["Policies"])
 
 app.include_router(reports.router,         prefix="/api/v1/reports",         tags=["Reports"])
@@ -287,6 +288,14 @@ app.include_router(optimization.router,       prefix="/api/v1/optimization",    
 app.include_router(ai_intelligence.router,    prefix="/api/v1/ai",               tags=["AI"])
 from app.routers import decisions
 app.include_router(decisions.router,          prefix="/api/v1/decision",         tags=["AI Decisions"])
+
+# Phase 7.1 — Enterprise AI Core Infrastructure
+from app.ai.api.router import router as ai_core_router
+app.include_router(ai_core_router, prefix="/api/ai", tags=["AI Core Infrastructure"])
+
+# Phase 8 — Autonomous AI Agents & Multi-Agent Intelligence
+from app.ai.api.agents import router as ai_agents_router
+app.include_router(ai_agents_router, prefix="/api/agents", tags=["AI Agents"])
 
 # Phase 6.1 - Scenario Library
 app.include_router(scenarios.router,          prefix="/api/v1/scenarios",        tags=["Scenarios"])

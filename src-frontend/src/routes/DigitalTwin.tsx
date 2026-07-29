@@ -191,8 +191,13 @@ export default function DigitalTwin() {
                   <Server className="w-3.5 h-3.5 text-cyan-500" />
                   Substations
                 </span>
-                <div className="text-xl font-bold font-mono text-slate-800 dark:text-[#F8FAFC] mt-2">
-                  {data.metrics.total_substations}
+                <div className="mt-2">
+                  <div className="text-xl font-bold font-mono text-slate-800 dark:text-[#F8FAFC]">
+                    {data.metrics.total_substations}
+                  </div>
+                  <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono border-t border-slate-100 dark:border-[#1E293B]/50 pt-1.5 leading-relaxed">
+                    {data.topology?.substations?.map((s: any) => s.name).join(", ")}
+                  </div>
                 </div>
               </div>
 
@@ -201,8 +206,13 @@ export default function DigitalTwin() {
                   <GitBranch className="w-3.5 h-3.5 text-yellow-500" />
                   Buses
                 </span>
-                <div className="text-xl font-bold font-mono text-slate-800 dark:text-[#F8FAFC] mt-2">
-                  {data.metrics.total_buses}
+                <div className="mt-2">
+                  <div className="text-xl font-bold font-mono text-slate-800 dark:text-[#F8FAFC]">
+                    {data.metrics.total_buses}
+                  </div>
+                  <div className="text-[10px] text-slate-400 dark:text-slate-500 mt-1.5 font-mono border-t border-slate-100 dark:border-[#1E293B]/50 pt-1.5 leading-relaxed">
+                    {data.topology?.buses?.map((b: any) => b.name).join(", ")}
+                  </div>
                 </div>
               </div>
 
@@ -1076,12 +1086,6 @@ export default function DigitalTwin() {
                       asset groups. Referential verification is satisfied. Database tables are in a
                       fully synchronized state with the physical EMS SCADA database.
                     </p>
-                  </div>
-
-                  <div className="mt-4 font-mono text-[9px] text-slate-400 dark:text-slate-500 space-y-1">
-                    <div>// IMPLEMENTATION: PHASE 3.1 TOPOLOGY</div>
-                    <div>// SEED SOURCE: SQLite LOCAL DATABASE</div>
-                    <div>// VALIDATION TARGET: NERC COMPLIANCY LIMITS</div>
                   </div>
                 </div>
               </div>

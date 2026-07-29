@@ -8,7 +8,7 @@ from app.services.digital_twin.prediction_engine import PredictionEngine
 
 router = APIRouter()
 
-@router.get("/")
+@router.get("")
 async def get_all_predictions(
     horizon_minutes: int = Query(15, description="Time horizon in minutes"),
     db: Session = Depends(get_db), 

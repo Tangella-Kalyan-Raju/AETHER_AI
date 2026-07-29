@@ -20,12 +20,15 @@ from app.models.integration_models import IntegrationConfig, AssetMapping, Telem
 from app.models.event_models import EngineeringRule, OperationalEvent, OperationalAlarm, OperationalIncident
 from app.models.forecast_models import ForecastModelRegistry, ForecastRecord, ForecastValidationLog
 from app.models.optimization_models import OptimizationStrategy, RecommendationRecord, ScenarioSimulation, OptimizationConfig, OptimizationJob, OptimizationExecutionHistory, GridOptimizationResult, FinancialCarbonResult, MultiObjectiveDecisionResult, OptimizationAnalyticsSnapshot, OptimizationAuditEntry
-from app.models.ai_models import AIDecisionLog
+from app.models.ai_models import AIDecisionLog, AIConversation, AIMessage, AISession, AIPromptTemplate, AILog, AIMemory, AISetting
 from app.models.scenario_models import ScenarioTemplate, ScenarioEvent
 from app.models.simulation_models import SimulationRun, SimulationStateSnapshot, SimulationEventLog
 from app.models.analysis_models import SimulationAnalysisReport, AIExplainabilityTrace, StrategyComparison
 from app.models.training_models import TrainingSession, OperatorAssessment, Certification, ReplaySession, TraineeAnalytics
-
+from app.models.asset_models import (
+    Asset, AssetCategory, AssetMetadata, AssetHierarchy, AssetConfiguration, AssetHistory, AssetLocation, AssetRegistry,
+    AssetHealth, AssetMaintenance, InspectionRecord, ServiceRecord, AssetAIInsight, AssetRecommendationHistory, AssetLifecycle
+)
 
 __all__ = [
     "Base",
@@ -100,6 +103,30 @@ __all__ = [
     "ReplaySession",
     "TraineeAnalytics",
     "PolicyIntelligence",
-    "PolicyDeployment"
+    "PolicyDeployment",
+    "Asset",
+    "AssetCategory",
+    "AssetMetadata",
+    "AssetHierarchy",
+    "AssetConfiguration",
+    "AssetHistory",
+    "AssetLocation",
+    "AssetRegistry",
+    "AssetHealth",
+    "AssetMaintenance",
+    "InspectionRecord",
+    "ServiceRecord",
+    "AssetAIInsight",
+    "AssetRecommendationHistory",
+    "AssetLifecycle",
+    "AIDecisionLog",
+    "AIConversation",
+    "AIMessage",
+    "AISession",
+    "AIPromptTemplate",
+    "AILog",
+    "AIMemory",
+    "AISetting"
 ]
+
 

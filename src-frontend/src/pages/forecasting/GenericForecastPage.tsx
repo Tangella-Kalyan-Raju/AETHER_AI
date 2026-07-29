@@ -3,9 +3,9 @@ import { PageHeader } from "@/components/ui/page-header";
 import { ForecastAreaChart } from "@/components/forecasting/ForecastCharts";
 import { ForecastKpiCard } from "@/components/forecasting/ForecastCards";
 import { ForecastControls } from "@/components/forecasting/ForecastControls";
-import { api } from "@/lib/api";
+import api from "@/api/axios";
 import { format } from "date-fns";
-import { Loader2 } from "lucide-react";
+import { Loader2, ArrowLeft } from "lucide-react";
 
 export const GenericForecastPage = ({
   domain,
@@ -15,6 +15,9 @@ export const GenericForecastPage = ({
   dataKey,
   unit,
   kpiTitle,
+  hideControls,
+  selectedType,
+  onTypeChange,
 }: any) => {
   const [data, setData] = useState<any>(null);
   const [loading, setLoading] = useState(true);
@@ -24,7 +27,7 @@ export const GenericForecastPage = ({
     const loadForecast = async () => {
       setLoading(true);
       try {
-        const res = await api.get(`/forecasting/${domain}`);
+        const res = await api.get(`/api/v1/forecasting/${domain}`);
         setData(res.data);
         setError(null);
       } catch (err: any) {
@@ -67,9 +70,20 @@ export const GenericForecastPage = ({
 
   return (
     <div className="p-6 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
+      {hideControls && onTypeChange && (
+        <button
+          onClick={() => onTypeChange("All Forecasts")}
+          className="flex items-center text-sm text-slate-500 hover:text-slate-900 dark:text-slate-400 dark:hover:text-white font-medium transition-colors"
+        >
+          <ArrowLeft className="w-4 h-4 mr-2" />
+          Back to Dashboard
+        </button>
+      )}
       <PageHeader title={title} description={description} />
 
-      <ForecastControls />
+      {!hideControls && (
+        <ForecastControls selectedType={selectedType} onTypeChange={onTypeChange} />
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
         <div className="lg:col-span-1 space-y-6">

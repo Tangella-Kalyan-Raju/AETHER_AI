@@ -23,30 +23,7 @@ router = APIRouter()
 async def get_forecasts(db: Session = Depends(get_db), current_user = Depends(get_current_user)):
     return db.query(Forecast).all()
 
-@router.get("/{forecast_id}", response_model=ForecastResponse)
-async def get_forecast(forecast_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    forecast = forecast_manager.get_forecast(db, forecast_id)
-    if not forecast:
-        raise HTTPException(status_code=404, detail="Forecast not found")
-    return forecast
 
-@router.get("/{forecast_id}/history", response_model=List[ForecastHistoryResponse])
-async def get_forecast_history(forecast_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    return forecast_repository.get_history(db, forecast_id)
-
-@router.get("/{forecast_id}/metadata", response_model=ForecastMetadataResponse)
-async def get_forecast_metadata(forecast_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    meta = forecast_repository.get_metadata(db, forecast_id)
-    if not meta:
-        raise HTTPException(status_code=404, detail="Metadata not found")
-    return meta
-
-@router.get("/{forecast_id}/status")
-async def get_forecast_status(forecast_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
-    forecast = forecast_manager.get_forecast(db, forecast_id)
-    if not forecast:
-        raise HTTPException(status_code=404, detail="Forecast not found")
-    return {"id": forecast.id, "status": forecast.status}
 
 @router.post("/run", response_model=ForecastHistoryResponse)
 async def run_forecast(run_request: ForecastRunRequest, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
@@ -190,4 +167,30 @@ async def get_domain_forecast(
         generated_at=latest_time,
         forecasts=forecasts
     )
+
+
+@router.get("/{forecast_id}", response_model=ForecastResponse)
+async def get_forecast(forecast_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    forecast = forecast_manager.get_forecast(db, forecast_id)
+    if not forecast:
+        raise HTTPException(status_code=404, detail="Forecast not found")
+    return forecast
+
+@router.get("/{forecast_id}/history", response_model=List[ForecastHistoryResponse])
+async def get_forecast_history(forecast_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    return forecast_repository.get_history(db, forecast_id)
+
+@router.get("/{forecast_id}/metadata", response_model=ForecastMetadataResponse)
+async def get_forecast_metadata(forecast_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    meta = forecast_repository.get_metadata(db, forecast_id)
+    if not meta:
+        raise HTTPException(status_code=404, detail="Metadata not found")
+    return meta
+
+@router.get("/{forecast_id}/status")
+async def get_forecast_status(forecast_id: str, db: Session = Depends(get_db), current_user = Depends(get_current_user)):
+    forecast = forecast_manager.get_forecast(db, forecast_id)
+    if not forecast:
+        raise HTTPException(status_code=404, detail="Forecast not found")
+    return {"id": forecast.id, "status": forecast.status}
 

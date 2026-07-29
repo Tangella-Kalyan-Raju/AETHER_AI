@@ -148,8 +148,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     const subscription = authService.onAuthStateChange(async (event, currentSession) => {
       if (!isMounted) return;
 
-      console.log(`[GPO-AUTH] Custom Auth event triggered: ${event}`);
-
       if (currentSession) {
         setSession(currentSession);
         setUser(currentSession.user);

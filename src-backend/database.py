@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -31,17 +34,17 @@ try:
 
     DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
     engine = create_engine(DATABASE_URL, pool_pre_ping=True)
-    print(f"[GPO-DB] Connected to MySQL database: {MYSQL_DATABASE}")
+    logger.info(f"[GPO-DB] Connected to MySQL database: {MYSQL_DATABASE}")
 except Exception as e:
     # Fallback to local SQLite database so there are no connection Refused errors
-    print(f"[GPO-DB] MySQL server offline ({e}). Falling back to SQLite database...")
+    logger.info(f"[GPO-DB] MySQL server offline ({e}). Falling back to SQLite database...")
     # Store SQLite file locally in the backend directory
     DATABASE_URL = "sqlite:///gpo_auth.db"
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False}
     )
-    print("[GPO-DB] Connected to SQLite database: gpo_auth.db")
+    logger.info("[GPO-DB] Connected to SQLite database: gpo_auth.db")
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 

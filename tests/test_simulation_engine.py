@@ -4,7 +4,10 @@ from app.main import app
 from app.core.security import get_current_user
 
 class MockUser:
+    id = 1
     username = "sim_operator"
+    email = "sim_operator@gpo.gov"
+    role = "Super Admin"
 
 @pytest.fixture(autouse=True)
 def override_auth():

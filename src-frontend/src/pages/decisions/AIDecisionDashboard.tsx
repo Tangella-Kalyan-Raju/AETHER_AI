@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/ui/page-header";
 import { RecommendationCard } from "@/components/decisions/RecommendationCard";
 import { ExplainableAIPanel } from "@/components/decisions/ExplainableAIPanel";
 import { RiskOpportunityDashboards } from "@/components/decisions/RiskOpportunityDashboards";
-import { api } from "@/lib/api";
+import api from "@/api/axios";
 import { BrainCircuit, Loader2, Sparkles, AlertCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
@@ -16,7 +16,7 @@ export default function AIDecisionDashboard() {
   const loadDecisions = async () => {
     setLoading(true);
     try {
-      const res = await api.get("/decision");
+      const res = await api.get("/api/v1/decision");
       setDecisions(res.data);
       if (res.data.length > 0) {
         setSelectedDecision(res.data[0]);
@@ -35,7 +35,7 @@ export default function AIDecisionDashboard() {
   const triggerAnalysis = async () => {
     setAnalyzing(true);
     try {
-      await api.post("/decision/analyse");
+      await api.post("/api/v1/decision/analyse");
       await loadDecisions();
     } catch (err) {
       console.error("Failed to trigger analysis", err);

@@ -71,6 +71,7 @@ class OptimizationExecutionPipeline:
         def log_msg(msg: str):
             timestamp = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M:%S")
             logs.append(f"[{timestamp}] {msg}")
+            logger.info(msg)
 
         start_time = time.time()
         log_msg(f"Initiating Grid Optimization Pipeline for Job ID: {job.id}")

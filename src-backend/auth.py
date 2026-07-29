@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 import os
 from datetime import datetime, timedelta, timezone
 from typing import Optional
@@ -19,7 +22,7 @@ def verify_password(plain_password: str, hashed_password: str) -> bool:
             hashed_password.encode("utf-8")
         )
     except Exception as e:
-        print(f"[GPO-AUTH] Password verification error: {e}")
+        logger.info(f"[GPO-AUTH] Password verification error: {e}")
         return False
 
 def get_password_hash(password: str) -> str:

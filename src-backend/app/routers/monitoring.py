@@ -1,3 +1,6 @@
+import logging
+logger = logging.getLogger(__name__)
+
 from typing import List, Optional
 from datetime import datetime
 from fastapi import APIRouter, Depends, Query, HTTPException, status
@@ -93,7 +96,7 @@ async def monitoring_stream(websocket: WebSocket):
     except WebSocketDisconnect:
         pass
     except Exception as e:
-        print(f"WebSocket error: {e}")
+        logger.info(f"WebSocket error: {e}")
     finally:
         # In a real app we'd need to unsubscribe, but InMemoryEventBus doesn't have it implemented yet.
         pass

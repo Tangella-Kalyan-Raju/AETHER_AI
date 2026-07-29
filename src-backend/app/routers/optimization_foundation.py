@@ -26,7 +26,7 @@ def get_optimization_dashboard(db: Session = Depends(get_db)):
     """Returns aggregated data for the Optimization Center dashboard."""
     return get_optimization_overview(db)
 
-@router.get("/history", response_model=List[Dict[str, Any]])
+@router.get("/foundation-history", response_model=List[Dict[str, Any]])
 def get_optimization_history(db: Session = Depends(get_db)):
     """Returns optimization history logs."""
     history = db.query(OptHistory).order_by(OptHistory.created_at.desc()).all()

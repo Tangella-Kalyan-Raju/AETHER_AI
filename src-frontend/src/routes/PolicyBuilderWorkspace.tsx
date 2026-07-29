@@ -38,10 +38,12 @@ interface Policy {
 
 interface PolicyVersion {
   id: number;
-  version_number: number;
-  changelog: string;
-  weights_json: Record<string, number>;
-  constraints_json: Record<string, any>;
+  version?: string;
+  version_number?: number;
+  changelog?: string;
+  code_content?: string;
+  weights_json?: Record<string, number>;
+  constraints_json?: Record<string, any>;
   created_at: string;
 }
 
@@ -93,9 +95,14 @@ export default function PolicyBuilderWorkspace() {
     setError(null);
     try {
       const res = await api.get("/api/v1/policies");
-      setPolicies(res.data);
-      if (res.data.length > 0 && !selectedPolicy) {
-        setSelectedPolicy(res.data[0]);
+      const policiesData = Array.isArray(res.data?.data)
+        ? res.data.data
+        : Array.isArray(res.data)
+          ? res.data
+          : [];
+      setPolicies(policiesData);
+      if (policiesData.length > 0 && !selectedPolicy) {
+        setSelectedPolicy(policiesData[0]);
       }
     } catch (err: any) {
       setError("Failed to fetch policies library.");
@@ -107,7 +114,12 @@ export default function PolicyBuilderWorkspace() {
   const fetchVersions = async (policyId: number) => {
     try {
       const res = await api.get(`/api/v1/policies/${policyId}/versions`);
-      setVersions(res.data);
+      const versionsData = Array.isArray(res.data?.data)
+        ? res.data.data
+        : Array.isArray(res.data)
+          ? res.data
+          : [];
+      setVersions(versionsData);
     } catch (err: any) {
       console.error("Error loading version history:", err);
     }
@@ -118,8 +130,9 @@ export default function PolicyBuilderWorkspace() {
     setError(null);
     try {
       const res = await api.post(`/api/v1/policies/${policyId}/clone`);
-      setPolicies((prev) => [...prev, res.data]);
-      setSelectedPolicy(res.data);
+      const policyData = res.data?.data || res.data;
+      setPolicies((prev) => [...prev, policyData]);
+      setSelectedPolicy(policyData);
       setSuccess(`Duplicated policy cloned successfully as draft.`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
@@ -145,8 +158,9 @@ export default function PolicyBuilderWorkspace() {
         ai_explanation: formExplanation,
         changelog: formChangelog,
       });
-      setPolicies((prev) => prev.map((p) => (p.id === selectedPolicy.id ? res.data : p)));
-      setSelectedPolicy(res.data);
+      const policyData = res.data?.data || res.data;
+      setPolicies((prev) => prev.map((p) => (p.id === selectedPolicy.id ? policyData : p)));
+      setSelectedPolicy(policyData);
       setSuccess("Custom policy changes successfully compiled and version history logged.");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
@@ -165,9 +179,10 @@ export default function PolicyBuilderWorkspace() {
     setError(null);
     try {
       const res = await api.post(`/api/v1/policies/${policyId}/${transition}`);
-      setPolicies((prev) => prev.map((p) => (p.id === policyId ? res.data : p)));
-      setSelectedPolicy(res.data);
-      setSuccess(`Lifecycle state successfully moved to: ${res.data.status}`);
+      const policyData = res.data?.data || res.data;
+      setPolicies((prev) => prev.map((p) => (p.id === policyId ? policyData : p)));
+      setSelectedPolicy(policyData);
+      setSuccess(`Lifecycle state successfully moved to: ${policyData.status}`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
       setError("Governance authorization check failed.");
@@ -184,8 +199,9 @@ export default function PolicyBuilderWorkspace() {
       const res = await api.post(
         `/api/v1/policies/${selectedPolicy.id}/versions/${versionId}/rollback`
       );
-      setPolicies((prev) => prev.map((p) => (p.id === selectedPolicy.id ? res.data : p)));
-      setSelectedPolicy(res.data);
+      const policyData = res.data?.data || res.data;
+      setPolicies((prev) => prev.map((p) => (p.id === selectedPolicy.id ? policyData : p)));
+      setSelectedPolicy(policyData);
       setSuccess(`Parameter sets successfully rolled back.`);
       setTimeout(() => setSuccess(null), 3000);
     } catch (err: any) {
@@ -226,8 +242,9 @@ export default function PolicyBuilderWorkspace() {
     try {
       const parsed = JSON.parse(importJsonText);
       const res = await api.post("/api/v1/policies/import", { data: parsed });
-      setPolicies((prev) => [...prev, res.data]);
-      setSelectedPolicy(res.data);
+      const policyData = res.data?.data || res.data;
+      setPolicies((prev) => [...prev, policyData]);
+      setSelectedPolicy(policyData);
       setShowImportModal(false);
       setImportJsonText("");
       setSuccess("Custom policy successfully imported as draft.");
@@ -551,91 +568,6 @@ export default function PolicyBuilderWorkspace() {
                 >
                   {actionLoading ? "Compiling..." : "COMPILE & SAVE POLICY"}
                 </button>
-              </div>
-            </div>
-
-            {/* Governance Actions Panel */}
-            <div className="p-5 border border-slate-200 dark:border-[#1E293B] bg-white dark:bg-[#07090C] rounded-[4px] space-y-4">
-              <h3 className="text-xs font-bold text-slate-400 font-mono uppercase tracking-wider border-b border-[#2A313C]/40 pb-2">
-                Policy Governance & Approval Workflows
-              </h3>
-              <div className="flex flex-wrap items-center gap-2">
-                {selectedPolicy.status === "draft" && (
-                  <button
-                    onClick={() => handleTransitionState(selectedPolicy.id, "submit-review")}
-                    className="px-3 py-1.5 bg-orange-500 hover:bg-orange-600 text-white font-bold text-xs rounded-[2px]"
-                  >
-                    SUBMIT FOR REVIEW
-                  </button>
-                )}
-
-                {selectedPolicy.status === "under_review" && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => handleTransitionState(selectedPolicy.id, "approve")}
-                      className="px-3 py-1.5 bg-purple-500 hover:bg-purple-600 text-white font-bold text-xs rounded-[2px]"
-                    >
-                      APPROVE POLICY
-                    </button>
-                    <button
-                      onClick={() => handleTransitionState(selectedPolicy.id, "archive")}
-                      className="px-3 py-1.5 bg-slate-600 hover:bg-slate-700 text-white font-bold text-xs rounded-[2px]"
-                    >
-                      REJECT & ARCHIVE
-                    </button>
-                  </div>
-                )}
-
-                {selectedPolicy.status === "approved" && (
-                  <button
-                    onClick={() => handleTransitionState(selectedPolicy.id, "publish")}
-                    className="px-3 py-1.5 bg-sky-500 hover:bg-sky-600 text-white font-bold text-xs rounded-[2px]"
-                  >
-                    PUBLISH POLICY
-                  </button>
-                )}
-
-                {selectedPolicy.status === "published" && (
-                  <button
-                    onClick={() => handleTransitionState(selectedPolicy.id, "archive")}
-                    className="px-3 py-1.5 bg-slate-650 hover:bg-slate-700 text-slate-300 font-bold text-xs rounded-[2px] border border-slate-700"
-                  >
-                    ARCHIVE POLICY
-                  </button>
-                )}
-              </div>
-            </div>
-
-            {/* Version control list & Rollback */}
-            <div className="p-5 border border-slate-200 dark:border-[#1E293B] bg-white dark:bg-[#07090C] rounded-[4px] space-y-4">
-              <h3 className="text-xs font-bold text-slate-400 font-mono uppercase tracking-wider border-b border-[#2A313C]/40 pb-2">
-                Version History (Configuration Revisions)
-              </h3>
-
-              <div className="space-y-2.5 max-h-48 overflow-y-auto">
-                {versions.map((v) => (
-                  <div
-                    key={v.id}
-                    className="flex justify-between items-center p-2.5 border border-[#2A313C]/45 bg-[#151A21]/20 rounded text-xs font-mono"
-                  >
-                    <div className="space-y-0.5">
-                      <span className="font-bold text-slate-350">Version v{v.version_number}</span>
-                      <span className="text-[10px] text-slate-500 block">"{v.changelog}"</span>
-                    </div>
-                    <button
-                      onClick={() => handleRollback(v.id)}
-                      className="px-2.5 py-1 border border-orange-500/30 hover:bg-orange-500/10 text-orange-500 rounded font-semibold text-[10px] flex items-center gap-1 transition-all"
-                    >
-                      <RotateCcw className="w-3 h-3" /> Rollback
-                    </button>
-                  </div>
-                ))}
-
-                {versions.length === 0 && (
-                  <p className="text-[10px] text-slate-500 font-mono text-center">
-                    No registered versions logged for this policy.
-                  </p>
-                )}
               </div>
             </div>
           </div>

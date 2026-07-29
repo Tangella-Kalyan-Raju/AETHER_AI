@@ -13,6 +13,7 @@ import {
   Shield,
   ArrowRight,
 } from "lucide-react";
+import api from "../api/axios";
 
 interface DatasetMeta {
   id: string;
@@ -45,19 +46,11 @@ export default function DatasetManagement() {
   const [enrichWeather, setEnrichWeather] = useState(false);
   const [importingId, setImportingId] = useState<string | null>(null);
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8000";
-
   const fetchDatasets = async () => {
     setLoading(true);
     try {
-      const token = localStorage.getItem("gpo_access_token");
-      const res = await fetch(`${API_URL}/api/v1/datasets/list`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) setDatasets(json.data);
-      }
+      const res = await api.get("/api/v1/datasets/list");
+      if (res.data?.success) setDatasets(res.data.data);
     } catch (err) {
       console.error("Error loading datasets:", err);
     } finally {
@@ -104,35 +97,29 @@ export default function DatasetManagement() {
     setUploadProgress(20);
 
     try {
-      const token = localStorage.getItem("gpo_access_token");
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const res = await fetch(`${API_URL}/api/v1/datasets/upload`, {
-        method: "POST",
-        body: formData,
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      const res = await api.post("/api/v1/datasets/upload", formData, {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
       });
 
       setUploadProgress(70);
 
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) {
-          setUploadProgress(100);
-          setUploadStatus("Upload verified and schema scanned successfully!");
-          setTimeout(() => {
-            setSelectedFile(null);
-            setUploading(false);
-            setUploadProgress(0);
-            setUploadStatus("");
-            fetchDatasets();
-          }, 1500);
-        } else {
-          throw new Error(json.error || "Failed parsing headers");
-        }
+      if (res.data?.success) {
+        setUploadProgress(100);
+        setUploadStatus("Upload verified and schema scanned successfully!");
+        setTimeout(() => {
+          setSelectedFile(null);
+          setUploading(false);
+          setUploadProgress(0);
+          setUploadStatus("");
+          fetchDatasets();
+        }, 1500);
       } else {
-        throw new Error("HTTP error " + res.status);
+        throw new Error(res.data?.error || "Failed parsing headers");
       }
     } catch (err: any) {
       console.error(err);
@@ -149,14 +136,8 @@ export default function DatasetManagement() {
     setLoadingPreview(true);
     setPreviewData(null);
     try {
-      const token = localStorage.getItem("gpo_access_token");
-      const res = await fetch(`${API_URL}/api/v1/datasets/preview/${dataset.id}`, {
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) setPreviewData(json.data);
-      }
+      const res = await api.get(`/api/v1/datasets/preview/${dataset.id}`);
+      if (res.data?.success) setPreviewData(res.data.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -167,25 +148,19 @@ export default function DatasetManagement() {
   const triggerImport = async (datasetId: string) => {
     setImportingId(datasetId);
     try {
-      const token = localStorage.getItem("gpo_access_token");
       const formData = new FormData();
       formData.append("enrich_weather", String(enrichWeather));
 
-      const res = await fetch(`${API_URL}/api/v1/datasets/import/${datasetId}`, {
-        method: "POST",
-        body: formData,
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      const res = await api.post(`/api/v1/datasets/import/${datasetId}`, formData, {
+        headers: { "Content-Type": "multipart/form-data" },
       });
-      if (res.ok) {
-        const json = await res.json();
-        if (json.success) {
-          alert("Import successfully completed! Grid operating data updated.");
-          fetchDatasets();
-          setPreviewDataset(null);
-          setPreviewData(null);
-        } else {
-          alert("Import failed: " + json.error);
-        }
+      if (res.data?.success) {
+        alert("Import successfully completed! Grid operating data updated.");
+        fetchDatasets();
+        setPreviewDataset(null);
+        setPreviewData(null);
+      } else {
+        alert("Import failed: " + res.data?.error);
       }
     } catch (err: any) {
       alert("Error: " + err.message);

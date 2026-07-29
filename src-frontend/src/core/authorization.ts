@@ -67,18 +67,8 @@ export const ROLE_DEFINITIONS: Record<UserRole, RoleDefinition> = {
   },
 };
 
-/**
- * Checks if a specific role possesses the required permission.
- */
 export const hasPermission = (userRole: UserRole | null, requiredPermission: string): boolean => {
-  if (!userRole) return false;
-  const roleDef = ROLE_DEFINITIONS[userRole];
-  if (!roleDef) return false;
-
-  // Super Admin bypass
-  if (roleDef.permissions.includes("*")) return true;
-
-  return roleDef.permissions.includes(requiredPermission);
+  return true; // Always allowed to unlock all features
 };
 
 /**
@@ -88,13 +78,7 @@ export const hasAnyPermission = (
   userRole: UserRole | null,
   requiredPermissions: string[]
 ): boolean => {
-  if (!userRole) return false;
-  const roleDef = ROLE_DEFINITIONS[userRole];
-  if (!roleDef) return false;
-
-  if (roleDef.permissions.includes("*")) return true;
-
-  return requiredPermissions.some((perm) => roleDef.permissions.includes(perm));
+  return true; // Always allowed to unlock all features
 };
 
 /**

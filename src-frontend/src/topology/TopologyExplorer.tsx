@@ -7,6 +7,7 @@ export default function TopologyExplorer() {
   const [expandedNodes, setExpandedNodes] = useState<Record<string, boolean>>({
     root: true,
   });
+  const [selectedAsset, setSelectedAsset] = useState<any>(null);
 
   if (loading) {
     return <div className="p-6">Loading Topology Explorer...</div>;
@@ -25,7 +26,7 @@ export default function TopologyExplorer() {
   const loads = topology?.topology?.loads || [];
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500">
+    <div className="space-y-6 select-text animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold text-slate-900 dark:text-[#F8FAFC]">
@@ -77,7 +78,10 @@ export default function TopologyExplorer() {
                     <div key={bus.id}>
                       <div
                         className="flex items-center gap-2 p-1.5 hover:bg-slate-100 dark:hover:bg-[#1C222B] rounded cursor-pointer transition-colors"
-                        onClick={() => toggleNode(`bus-${bus.id}`)}
+                        onClick={() => {
+                          toggleNode(`bus-${bus.id}`);
+                          setSelectedAsset({ ...bus, assetType: "bus" });
+                        }}
                       >
                         {expandedNodes[`bus-${bus.id}`] ? (
                           <ChevronDown className="w-3 h-3 text-slate-400" />
@@ -101,6 +105,7 @@ export default function TopologyExplorer() {
                               <div
                                 key={gen.id}
                                 className="flex items-center gap-2 p-1 hover:bg-slate-100 dark:hover:bg-[#1C222B] rounded cursor-pointer group"
+                                onClick={() => setSelectedAsset({ ...gen, assetType: "generator" })}
                               >
                                 <Zap className="w-3 h-3 text-orange-500" />
                                 <span className="text-slate-600 dark:text-slate-400 text-xs">
@@ -118,6 +123,7 @@ export default function TopologyExplorer() {
                               <div
                                 key={load.id}
                                 className="flex items-center gap-2 p-1 hover:bg-slate-100 dark:hover:bg-[#1C222B] rounded cursor-pointer group"
+                                onClick={() => setSelectedAsset({ ...load, assetType: "load" })}
                               >
                                 <Activity className="w-3 h-3 text-purple-500" />
                                 <span className="text-slate-600 dark:text-slate-400 text-xs">
@@ -139,17 +145,138 @@ export default function TopologyExplorer() {
         </div>
 
         {/* Details View */}
-        <div className="lg:col-span-2 bg-white dark:bg-[#151A21] border border-slate-200 dark:border-[#2A313C] rounded-xl flex flex-col items-center justify-center p-6 text-center h-[600px]">
-          <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-[#1C222B] border border-slate-200 dark:border-[#334155] flex items-center justify-center mb-4">
-            <Network className="w-8 h-8 text-slate-400" />
-          </div>
-          <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
-            Select an Asset
-          </h3>
-          <p className="text-slate-500 text-sm max-w-sm">
-            Navigate the digital twin topology tree on the left to inspect detailed operational
-            metadata and live measurements for specific assets.
-          </p>
+        <div className="lg:col-span-2 bg-white dark:bg-[#151A21] border border-slate-200 dark:border-[#2A313C] rounded-xl flex flex-col p-6 h-[600px] overflow-y-auto">
+          {!selectedAsset ? (
+            <div className="flex flex-col items-center justify-center h-full text-center">
+              <div className="w-16 h-16 rounded-full bg-slate-50 dark:bg-[#1C222B] border border-slate-200 dark:border-[#334155] flex items-center justify-center mb-4">
+                <Network className="w-8 h-8 text-slate-400" />
+              </div>
+              <h3 className="text-lg font-semibold text-slate-800 dark:text-white mb-2">
+                Select an Asset
+              </h3>
+              <p className="text-slate-500 text-sm max-w-sm">
+                Navigate the digital twin topology tree on the left to inspect detailed operational
+                metadata and live measurements for specific assets.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-6">
+              <div className="flex items-center gap-3 border-b border-slate-200 dark:border-[#2A313C] pb-4">
+                <div
+                  className={`p-3 rounded-lg ${selectedAsset.assetType === "generator" ? "bg-orange-500/10 text-orange-500" : selectedAsset.assetType === "load" ? "bg-purple-500/10 text-purple-500" : "bg-blue-500/10 text-blue-500"}`}
+                >
+                  {selectedAsset.assetType === "generator" ? (
+                    <Zap className="w-6 h-6" />
+                  ) : selectedAsset.assetType === "load" ? (
+                    <Activity className="w-6 h-6" />
+                  ) : (
+                    <Server className="w-6 h-6" />
+                  )}
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-slate-900 dark:text-white">
+                    {selectedAsset.name}
+                  </h2>
+                  <p className="text-sm text-slate-500 capitalize">
+                    {selectedAsset.assetType} • {selectedAsset.id}
+                  </p>
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                  Live Telemetry
+                </h3>
+                <div className="grid grid-cols-2 gap-4">
+                  {selectedAsset.assetType === "generator" && (
+                    <>
+                      <div className="bg-slate-50 dark:bg-[#1C222B] p-4 rounded-lg border border-slate-200 dark:border-[#2A313C]">
+                        <p className="text-xs text-slate-500 mb-1 uppercase">Active Power (P)</p>
+                        <p className="text-lg font-mono font-bold text-slate-900 dark:text-white">
+                          {liveMeasurements[`generator-${selectedAsset.id}`]?.p_mw?.toFixed(2) ||
+                            "0.00"}{" "}
+                          MW
+                        </p>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-[#1C222B] p-4 rounded-lg border border-slate-200 dark:border-[#2A313C]">
+                        <p className="text-xs text-slate-500 mb-1 uppercase">Reactive Power (Q)</p>
+                        <p className="text-lg font-mono font-bold text-slate-900 dark:text-white">
+                          {liveMeasurements[`generator-${selectedAsset.id}`]?.q_mvar?.toFixed(2) ||
+                            "0.00"}{" "}
+                          MVAR
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  {selectedAsset.assetType === "load" && (
+                    <>
+                      <div className="bg-slate-50 dark:bg-[#1C222B] p-4 rounded-lg border border-slate-200 dark:border-[#2A313C]">
+                        <p className="text-xs text-slate-500 mb-1 uppercase">Active Power Demand</p>
+                        <p className="text-lg font-mono font-bold text-slate-900 dark:text-white">
+                          {liveMeasurements[`load-${selectedAsset.id}`]?.p_mw?.toFixed(2) || "0.00"}{" "}
+                          MW
+                        </p>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-[#1C222B] p-4 rounded-lg border border-slate-200 dark:border-[#2A313C]">
+                        <p className="text-xs text-slate-500 mb-1 uppercase">
+                          Reactive Power Demand
+                        </p>
+                        <p className="text-lg font-mono font-bold text-slate-900 dark:text-white">
+                          {liveMeasurements[`load-${selectedAsset.id}`]?.q_mvar?.toFixed(2) ||
+                            "0.00"}{" "}
+                          MVAR
+                        </p>
+                      </div>
+                    </>
+                  )}
+                  {selectedAsset.assetType === "bus" && (
+                    <>
+                      <div className="bg-slate-50 dark:bg-[#1C222B] p-4 rounded-lg border border-slate-200 dark:border-[#2A313C]">
+                        <p className="text-xs text-slate-500 mb-1 uppercase">Voltage Magnitude</p>
+                        <p className="text-lg font-mono font-bold text-slate-900 dark:text-white">
+                          {liveMeasurements[`bus-${selectedAsset.id}`]?.v_mag?.toFixed(3) ||
+                            "1.000"}{" "}
+                          p.u.
+                        </p>
+                      </div>
+                      <div className="bg-slate-50 dark:bg-[#1C222B] p-4 rounded-lg border border-slate-200 dark:border-[#2A313C]">
+                        <p className="text-xs text-slate-500 mb-1 uppercase">Voltage Angle</p>
+                        <p className="text-lg font-mono font-bold text-slate-900 dark:text-white">
+                          {liveMeasurements[`bus-${selectedAsset.id}`]?.v_ang?.toFixed(2) || "0.00"}
+                          °
+                        </p>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              <div>
+                <h3 className="text-sm font-semibold text-slate-700 dark:text-slate-300 mb-3">
+                  Asset Metadata
+                </h3>
+                <div className="bg-slate-50 dark:bg-[#1C222B] border border-slate-200 dark:border-[#2A313C] rounded-lg overflow-hidden">
+                  <table className="w-full text-sm text-left">
+                    <tbody className="divide-y divide-slate-200 dark:divide-[#2A313C]">
+                      {Object.entries(selectedAsset).map(([k, v]) => {
+                        if (k === "assetType" || k === "id" || k === "name") return null;
+                        return (
+                          <tr key={k}>
+                            <td className="px-4 py-2 font-medium text-slate-500 capitalize">
+                              {k.replace(/_/g, " ")}
+                            </td>
+                            <td className="px-4 py-2 text-slate-900 dark:text-slate-300">
+                              {String(v)}
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
       </div>
     </div>

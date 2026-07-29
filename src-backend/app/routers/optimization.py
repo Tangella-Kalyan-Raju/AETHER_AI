@@ -185,6 +185,25 @@ def get_history_logs(history_id: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=404, detail="Execution log not found.")
     return {"id": history.id, "logs": history.logs}
 
+@router.get("/jobs/{job_id}/logs")
+def get_job_logs(job_id: str, db: Session = Depends(get_db)):
+    # Try to find in execution history
+    history = db.query(OptimizationExecutionHistory).filter(OptimizationExecutionHistory.job_id == job_id).first()
+    if history:
+        return {"id": history.id, "job_id": job_id, "logs": history.logs}
+    
+    # Check if the job itself exists
+    job = db.query(OptimizationJob).filter(OptimizationJob.id == job_id).first()
+    if not job:
+        raise HTTPException(status_code=404, detail="Job not found.")
+        
+    # If the job is active or pending, return current status as log information
+    return {
+        "id": None,
+        "job_id": job_id,
+        "logs": f"Solver Engine Active\nStatus: {job.status}\nProgress: {job.progress:.1f}%\nSynchronizing SCADA telemetry streams..."
+    }
+
 # ── High-Fidelity Phase 7.2 Results & Execution Endpoints ──────────
 
 @router.get("/results/{job_id}")

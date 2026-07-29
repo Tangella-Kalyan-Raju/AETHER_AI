@@ -116,13 +116,18 @@ export default function PolicySimulationWorkspace() {
     setLoading(true);
     try {
       const res = await api.get("/api/v1/policies");
-      setPolicies(res.data);
-      if (res.data.length > 0) {
-        setPolicyIdA(res.data[0].id);
-        if (res.data.length > 1) {
-          setPolicyIdB(res.data[1].id);
+      const policiesData = Array.isArray(res.data?.data)
+        ? res.data.data
+        : Array.isArray(res.data)
+          ? res.data
+          : [];
+      setPolicies(policiesData);
+      if (policiesData.length > 0) {
+        setPolicyIdA(policiesData[0].id);
+        if (policiesData.length > 1) {
+          setPolicyIdB(policiesData[1].id);
         } else {
-          setPolicyIdB(res.data[0].id);
+          setPolicyIdB(policiesData[0].id);
         }
       }
     } catch (err: any) {
@@ -160,22 +165,25 @@ export default function PolicySimulationWorkspace() {
         policy_id_b: policyIdB,
         scenario_type: scenario,
       });
-      setCompResult(compareRes.data.comparison);
-      setAiEval(compareRes.data.ai_evaluation);
+      const compareData = compareRes.data?.data || compareRes.data;
+      setCompResult(compareData.comparison);
+      setAiEval(compareData.ai_evaluation);
 
       // 2. Risk Assessment A
       const riskARes = await api.post("/api/v1/policies/simulation/run", {
         policy_id: policyIdA,
         scenario_type: scenario,
       });
-      setRiskA(riskARes.data.risk_assessment);
+      const riskAData = riskARes.data?.data || riskARes.data;
+      setRiskA(riskAData.risk_assessment);
 
       // 3. Risk Assessment B
       const riskBRes = await api.post("/api/v1/policies/simulation/run", {
         policy_id: policyIdB,
         scenario_type: scenario,
       });
-      setRiskB(riskBRes.data.risk_assessment);
+      const riskBData = riskBRes.data?.data || riskBRes.data;
+      setRiskB(riskBData.risk_assessment);
 
       setCompleted(true);
     } catch (err: any) {

@@ -270,5 +270,6 @@ class BaseRepository(Generic[T]):
             "page": page,
             "page_size": page_size,
             "total": total_records,
+            "total_records": total_records,
             "total_pages": total_pages
         }

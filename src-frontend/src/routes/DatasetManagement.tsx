@@ -12,8 +12,10 @@ import {
   X,
   Shield,
   ArrowRight,
+  Activity
 } from "lucide-react";
 import api from "../api/axios";
+import IntelligenceDashboard from "../components/dataset-analytics/IntelligenceDashboard";
 
 interface DatasetMeta {
   id: string;
@@ -22,6 +24,7 @@ interface DatasetMeta {
   columns: Record<string, string>;
   row_count: number;
   status: string;
+  analytics_status?: string;
   error_message?: string;
   created_at: string;
 }
@@ -45,6 +48,11 @@ export default function DatasetManagement() {
   const [loadingPreview, setLoadingPreview] = useState(false);
   const [enrichWeather, setEnrichWeather] = useState(false);
   const [importingId, setImportingId] = useState<string | null>(null);
+
+  // Analytics state
+  const [analyticsDataset, setAnalyticsDataset] = useState<DatasetMeta | null>(null);
+  const [analyticsData, setAnalyticsData] = useState<any>(null);
+  const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
   const fetchDatasets = async () => {
     setLoading(true);
@@ -133,6 +141,7 @@ export default function DatasetManagement() {
 
   const viewPreview = async (dataset: DatasetMeta) => {
     setPreviewDataset(dataset);
+    setAnalyticsDataset(null);
     setLoadingPreview(true);
     setPreviewData(null);
     try {
@@ -142,6 +151,21 @@ export default function DatasetManagement() {
       console.error(err);
     } finally {
       setLoadingPreview(false);
+    }
+  };
+
+  const viewAnalytics = async (dataset: DatasetMeta) => {
+    setAnalyticsDataset(dataset);
+    setPreviewDataset(null);
+    setLoadingAnalytics(true);
+    setAnalyticsData(null);
+    try {
+      const res = await api.get(`/api/v1/datasets/analytics/${dataset.id}`);
+      if (res.data?.success) setAnalyticsData(res.data.data.analytics_data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoadingAnalytics(false);
     }
   };
 
@@ -319,9 +343,9 @@ export default function DatasetManagement() {
                       <td className="py-3 text-slate-400">
                         {new Date(d.created_at).toLocaleDateString()}
                       </td>
-                      <td className="py-3">
+                      <td className="py-3 flex flex-col gap-1">
                         <span
-                          className={`inline-flex items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-bold ${
+                          className={`inline-flex w-fit items-center rounded px-1.5 py-0.5 text-[10px] font-mono font-bold ${
                             d.status === "completed"
                               ? "bg-emerald-500/10 text-emerald-400"
                               : d.status === "failed"
@@ -333,14 +357,30 @@ export default function DatasetManagement() {
                         >
                           {d.status.toUpperCase()}
                         </span>
+                        {d.analytics_status && d.status === "completed" && (
+                           <span className={`inline-flex w-fit items-center rounded px-1.5 py-0.5 text-[9px] font-mono font-bold ${
+                              d.analytics_status === 'completed' ? 'bg-orange-500/10 text-orange-400' : 'bg-slate-800 text-slate-500'
+                           }`}>
+                             AI: {d.analytics_status.toUpperCase()}
+                           </span>
+                        )}
                       </td>
-                      <td className="py-3 text-right space-x-1.5">
+                      <td className="py-3 text-right space-x-1.5 whitespace-nowrap">
                         <button
                           onClick={() => viewPreview(d)}
                           className="px-2 py-1 bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded transition-all font-mono text-[10px]"
                         >
                           Preview
                         </button>
+                        {d.analytics_status === "completed" && (
+                          <button
+                            onClick={() => viewAnalytics(d)}
+                            className="px-2 py-1 bg-orange-600/10 hover:bg-orange-600/20 border border-orange-500/30 text-orange-400 rounded transition-all font-mono text-[10px] flex inline-flex items-center gap-1"
+                          >
+                            <Activity className="w-3 h-3" />
+                            Analytics
+                          </button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -392,9 +432,9 @@ export default function DatasetManagement() {
                       <span className="text-slate-500 uppercase text-[9px]">{std}</span>
                       <span
                         className="font-semibold text-slate-300 truncate max-w-[80px]"
-                        title={raw}
+                        title={raw as string}
                       >
-                        {raw}
+                        {raw as string}
                       </span>
                     </div>
                   ))}
@@ -454,7 +494,7 @@ export default function DatasetManagement() {
                   ) : (
                     <Play className="w-4 h-4" />
                   )}
-                  Authorize DB Import
+                  Authorize DB Import & Analytics
                 </button>
               </div>
             </div>
@@ -462,6 +502,27 @@ export default function DatasetManagement() {
             <div className="p-6 text-center text-red-400 font-mono text-xs">
               Error parsing preview content. Make sure dataset file format is correct.
             </div>
+          )}
+        </div>
+      )}
+
+      {/* Analytics Dashboard Section */}
+      {analyticsDataset && (
+        <div className="relative">
+          <button
+            onClick={() => setAnalyticsDataset(null)}
+            className="absolute top-4 right-4 text-slate-500 hover:text-white transition-colors z-10"
+          >
+            <X className="w-5 h-5" />
+          </button>
+          
+          {loadingAnalytics ? (
+            <div className="rounded-lg border border-slate-800 bg-[#07090C]/40 p-12 text-center text-slate-500 font-mono text-xs animate-pulse">
+              <Activity className="w-8 h-8 text-orange-500 mx-auto mb-4 animate-spin" />
+              Loading AI Analytics and Statistical Matrix...
+            </div>
+          ) : (
+            <IntelligenceDashboard analyticsData={analyticsData} datasetName={analyticsDataset.filename} />
           )}
         </div>
       )}

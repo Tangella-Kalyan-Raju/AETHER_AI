@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import Dict, Any, List
 
@@ -7,8 +7,18 @@ from app.core.security import PermissionGuard
 from app.models.auth_models import User
 from app.models.dashboard_models import Dataset, DatasetRecord, DatasetVersion
 from app.services.dataset_service import DatasetService
+from app.services.analytics.dataset_analytics import DatasetAnalyticsService
+from app.database.connection import SessionLocal
 
 router = APIRouter(prefix="/api/v1/datasets", tags=["Dataset Management"])
+
+def run_analytics_background(dataset_id: str):
+    db = SessionLocal()
+    try:
+        service = DatasetAnalyticsService(db)
+        service.analyze_dataset(dataset_id)
+    finally:
+        db.close()
 
 @router.post("/upload", response_model=Dict[str, Any])
 async def upload_dataset(
@@ -44,6 +54,7 @@ async def upload_dataset(
             "columns": dataset.columns,
             "row_count": dataset.row_count,
             "status": dataset.status,
+            "analytics_status": dataset.analytics_status,
             "created_at": dataset.created_at.isoformat()
         }
     }
@@ -67,6 +78,7 @@ def list_datasets(
                 "columns": d.columns,
                 "row_count": d.row_count,
                 "status": d.status,
+                "analytics_status": d.analytics_status,
                 "error_message": d.error_message,
                 "created_at": d.created_at.isoformat()
             } for d in datasets
@@ -113,6 +125,7 @@ def preview_dataset(
 @router.post("/import/{dataset_id}", response_model=Dict[str, Any])
 def import_dataset(
     dataset_id: str,
+    background_tasks: BackgroundTasks,
     enrich_weather: bool = Form(False),
     db: Session = Depends(get_db),
     current_user: User = Depends(PermissionGuard("dashboard:view"))
@@ -135,4 +148,49 @@ def import_dataset(
         content = f.read()
         
     res = DatasetService.import_records(db, dataset_id, content, enrich_weather)
+    
+    if res.get("success"):
+        background_tasks.add_task(run_analytics_background, dataset_id)
+
     return res
+
+@router.post("/analytics/{dataset_id}/analyze", response_model=Dict[str, Any])
+def analyze_dataset_manual(
+    dataset_id: str,
+    background_tasks: BackgroundTasks,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(PermissionGuard("dashboard:view"))
+):
+    dataset = db.query(Dataset).filter(Dataset.id == dataset_id).first()
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+        
+    if dataset.status != "completed":
+        raise HTTPException(status_code=400, detail="Dataset must be imported before analysis")
+
+    dataset.analytics_status = "processing"
+    db.commit()
+
+    background_tasks.add_task(run_analytics_background, dataset_id)
+    return {"success": True, "message": "Analytics job started"}
+
+@router.get("/analytics/{dataset_id}", response_model=Dict[str, Any])
+def get_dataset_analytics(
+    dataset_id: str,
+    db: Session = Depends(get_db),
+    current_user: User = Depends(PermissionGuard("dashboard:view"))
+):
+    dataset = db.query(Dataset).filter(Dataset.id == dataset_id).first()
+    if not dataset:
+        raise HTTPException(status_code=404, detail="Dataset not found")
+        
+    return {
+        "success": True,
+        "data": {
+            "id": dataset.id,
+            "filename": dataset.filename,
+            "analytics_status": dataset.analytics_status,
+            "analytics_data": dataset.analytics_data,
+            "error_message": dataset.error_message
+        }
+    }

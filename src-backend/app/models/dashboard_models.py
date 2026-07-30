@@ -131,6 +131,8 @@ class Dataset(Base):
     columns = Column(JSON, nullable=True) # Detected columns metadata
     row_count = Column(Integer, nullable=False, default=0)
     status = Column(String(50), nullable=False, default="uploaded") # uploaded, processing, completed, failed
+    analytics_status = Column(String(50), nullable=False, default="pending") # pending, processing, completed, failed
+    analytics_data = Column(JSON, nullable=True) # AI summary, statistics, charts
     error_message = Column(Text, nullable=True)
     created_at = Column(DateTime, default=datetime.utcnow, nullable=False)
     updated_at = Column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow, nullable=False)

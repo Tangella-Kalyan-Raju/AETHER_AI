@@ -72,7 +72,6 @@ export default function OptimizationAnalytics() {
   const [replaySession, setReplaySession] = useState<any>(null);
   const [replayIndex, setReplayIndex] = useState<number>(0);
   const [isReplaying, setIsReplaying] = useState<boolean>(false);
-  const [replayTimer, setReplayTimer] = useState<any>(null);
 
   // Recommendations States
   const [recAnalytics, setRecAnalytics] = useState<any>(null);
@@ -113,8 +112,9 @@ export default function OptimizationAnalytics() {
 
   // Handle timeline simulation timer
   useEffect(() => {
+    let timer: any = null;
     if (isReplaying && replaySession?.stages) {
-      const timer = setInterval(() => {
+      timer = setInterval(() => {
         setReplayIndex((prev) => {
           if (prev >= replaySession.stages.length - 1) {
             setIsReplaying(false);
@@ -123,14 +123,9 @@ export default function OptimizationAnalytics() {
           return prev + 1;
         });
       }, 1500);
-      setReplayTimer(timer);
-    } else {
-      if (replayTimer) {
-        clearInterval(replayTimer);
-      }
     }
     return () => {
-      if (replayTimer) clearInterval(replayTimer);
+      if (timer) clearInterval(timer);
     };
   }, [isReplaying, replaySession]);
 

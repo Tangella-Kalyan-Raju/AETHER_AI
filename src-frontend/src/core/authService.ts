@@ -88,7 +88,7 @@ class AuthService {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Incorrect email or password.");
+        throw new Error(errorData.message || errorData.detail || "Incorrect email or password.");
       }
 
       const data = await res.json();
@@ -148,7 +148,7 @@ class AuthService {
 
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({}));
-        throw new Error(errorData.detail || "Registration failed. Please check your inputs.");
+        throw new Error(errorData.message || errorData.detail || "Registration failed. Please check your inputs.");
       }
 
       // Auto-login after successful registration

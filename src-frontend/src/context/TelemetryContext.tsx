@@ -73,7 +73,8 @@ export function TelemetryProvider({ children }: TelemetryProviderProps) {
       const pRes = await fetch(`${API_URL}/api/v1/policies`, { headers });
       if (pRes.ok) {
         const pJson = await pRes.json();
-        const items = pJson.items || pJson || [];
+        const payload = pJson.success !== undefined ? pJson.data : pJson;
+        const items = payload.items || payload || [];
         const active = items.find((p: any) => p.is_active);
         if (active) {
           setActivePolicy((prev: any) => {
@@ -372,10 +373,14 @@ export function TelemetryProvider({ children }: TelemetryProviderProps) {
               const demandData = await demandRes.json();
               const solarData = await solarRes.json();
 
+              const wData = weatherData.success !== undefined ? weatherData.data : weatherData;
+              const dData = demandData.success !== undefined ? demandData.data : demandData;
+              const sData = solarData.success !== undefined ? solarData.data : solarData;
+
               setIntegrationData({
-                weather: Array.isArray(weatherData) ? weatherData : [],
-                demand: Array.isArray(demandData) ? demandData : [],
-                solar: Array.isArray(solarData) ? solarData : [],
+                weather: Array.isArray(wData) ? wData : [],
+                demand: Array.isArray(dData) ? dData : [],
+                solar: Array.isArray(sData) ? sData : [],
               });
             }
           } catch (intErr) {

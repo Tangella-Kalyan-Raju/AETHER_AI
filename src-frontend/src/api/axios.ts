@@ -25,7 +25,15 @@ api.interceptors.request.use(
 
 // Response interceptor to handle token expiry / unauthenticated responses
 api.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Automatically unwrap GPO JSON envelope if it exists
+    if (response.data && typeof response.data === 'object' && 'success' in response.data && 'data' in response.data) {
+      if (response.data.success) {
+        response.data = response.data.data;
+      }
+    }
+    return response;
+  },
   (error) => {
     if (error.response && error.response.status === 401) {
       console.warn("Unauthenticated request. Terminating session...");

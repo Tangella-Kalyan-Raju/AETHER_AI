@@ -12,7 +12,7 @@ import {
   X,
   Shield,
   ArrowRight,
-  Activity
+  Activity,
 } from "lucide-react";
 import api from "../api/axios";
 import IntelligenceDashboard from "../components/dataset-analytics/IntelligenceDashboard";
@@ -58,7 +58,8 @@ export default function DatasetManagement() {
     setLoading(true);
     try {
       const res = await api.get("/api/v1/datasets/list");
-      if (res.data?.success) setDatasets(res.data.data);
+      if (Array.isArray(res.data)) setDatasets(res.data);
+      else if (res.data?.success) setDatasets(res.data.data);
     } catch (err) {
       console.error("Error loading datasets:", err);
     } finally {
@@ -109,14 +110,12 @@ export default function DatasetManagement() {
       formData.append("file", selectedFile);
 
       const res = await api.post("/api/v1/datasets/upload", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
+        headers: { "Content-Type": "multipart/form-data" },
       });
 
       setUploadProgress(70);
 
-      if (res.data?.success) {
+      if (res.data && res.data.id) {
         setUploadProgress(100);
         setUploadStatus("Upload verified and schema scanned successfully!");
         setTimeout(() => {
@@ -146,7 +145,8 @@ export default function DatasetManagement() {
     setPreviewData(null);
     try {
       const res = await api.get(`/api/v1/datasets/preview/${dataset.id}`);
-      if (res.data?.success) setPreviewData(res.data.data);
+      if (res.data && res.data.headers) setPreviewData(res.data);
+      else if (res.data?.success) setPreviewData(res.data.data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -161,7 +161,8 @@ export default function DatasetManagement() {
     setAnalyticsData(null);
     try {
       const res = await api.get(`/api/v1/datasets/analytics/${dataset.id}`);
-      if (res.data?.success) setAnalyticsData(res.data.data.analytics_data);
+      if (res.data && res.data.analytics_status) setAnalyticsData(res.data.analytics_data);
+      else if (res.data?.success) setAnalyticsData(res.data.data.analytics_data);
     } catch (err) {
       console.error(err);
     } finally {
@@ -178,7 +179,7 @@ export default function DatasetManagement() {
       const res = await api.post(`/api/v1/datasets/import/${datasetId}`, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
-      if (res.data?.success) {
+      if (res.data?.success || res.data?.row_count) {
         alert("Import successfully completed! Grid operating data updated.");
         fetchDatasets();
         setPreviewDataset(null);
@@ -358,11 +359,15 @@ export default function DatasetManagement() {
                           {d.status.toUpperCase()}
                         </span>
                         {d.analytics_status && d.status === "completed" && (
-                           <span className={`inline-flex w-fit items-center rounded px-1.5 py-0.5 text-[9px] font-mono font-bold ${
-                              d.analytics_status === 'completed' ? 'bg-orange-500/10 text-orange-400' : 'bg-slate-800 text-slate-500'
-                           }`}>
-                             AI: {d.analytics_status.toUpperCase()}
-                           </span>
+                          <span
+                            className={`inline-flex w-fit items-center rounded px-1.5 py-0.5 text-[9px] font-mono font-bold ${
+                              d.analytics_status === "completed"
+                                ? "bg-orange-500/10 text-orange-400"
+                                : "bg-slate-800 text-slate-500"
+                            }`}
+                          >
+                            AI: {d.analytics_status.toUpperCase()}
+                          </span>
                         )}
                       </td>
                       <td className="py-3 text-right space-x-1.5 whitespace-nowrap">
@@ -515,14 +520,17 @@ export default function DatasetManagement() {
           >
             <X className="w-5 h-5" />
           </button>
-          
+
           {loadingAnalytics ? (
             <div className="rounded-lg border border-slate-800 bg-[#07090C]/40 p-12 text-center text-slate-500 font-mono text-xs animate-pulse">
               <Activity className="w-8 h-8 text-orange-500 mx-auto mb-4 animate-spin" />
               Loading AI Analytics and Statistical Matrix...
             </div>
           ) : (
-            <IntelligenceDashboard analyticsData={analyticsData} datasetName={analyticsDataset.filename} />
+            <IntelligenceDashboard
+              analyticsData={analyticsData}
+              datasetName={analyticsDataset.filename}
+            />
           )}
         </div>
       )}

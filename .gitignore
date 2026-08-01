@@ -29,4 +29,4 @@ venv/
 .DS_Store
 Thumbs.db
 
-src-backend/*.db
+src-backend/*.db*

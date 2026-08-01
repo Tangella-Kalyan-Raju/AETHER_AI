@@ -1,4 +1,7 @@
 import React, { createContext, useState, useEffect, useCallback, ReactNode } from "react";
+import { useAuth } from "@/hooks/useAuth";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://127.0.0.1:8000";
 
 export interface EventTimelineItem {
   id: string;
@@ -40,7 +43,8 @@ interface TelemetryProviderProps {
   children: ReactNode;
 }
 
-export function TelemetryProvider({ children }: TelemetryProviderProps) {
+export function TelemetryProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [topology, setTopology] = useState<any>(null);
   const [liveMeasurements, setLiveMeasurements] = useState<Record<string, any>>({});
   const [eventTimeline, setEventTimeline] = useState<EventTimelineItem[]>([]);
@@ -401,9 +405,11 @@ export function TelemetryProvider({ children }: TelemetryProviderProps) {
 
   // Periodic Telemetry Fluctuation Engine
   useEffect(() => {
-    fetchData(); // first fetch
-    fetchGovernanceData();
-  }, [fetchGovernanceData]);
+    if (user) {
+      fetchData(); // first fetch
+      fetchGovernanceData();
+    }
+  }, [user]); // Run when user authentication state changes
 
   useEffect(() => {
     if (!refreshInterval || !topology) return;

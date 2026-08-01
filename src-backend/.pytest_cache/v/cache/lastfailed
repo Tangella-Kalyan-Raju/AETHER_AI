@@ -1,0 +1,7 @@
+{
+  "tests/test_ai_agents.py::TestClient": true,
+  "tests/test_ai_analytics.py::TestClient": true,
+  "tests/test_ai_automation.py::TestClient": true,
+  "tests/test_ai_production.py::TestClient": true,
+  "tests/test_ai_workspace.py::TestClient": true
+}
